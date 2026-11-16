@@ -1,0 +1,19 @@
+# Zugangsdaten und Editor-Einstellungen (FTP-Server, Benutzername) – nie hochladen
+.vscode/
+*.code-workspace
+.env
+.env.*
+*.pem
+*.key
+
+# PHPStorm / JetBrains (Deployment-Zugänge)
+.idea/
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+
+# Abhängigkeiten und Logs
+node_modules/
+vendor/
+*.log
