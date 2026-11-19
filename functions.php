@@ -8,3 +8,4 @@ require_once __DIR__ . '/backend/carbonfields/index.php';
 require_once __DIR__ . '/backend/getter/index.php';
 require_once __DIR__ . '/backend/contact/index.php';
 require_once __DIR__ . '/backend/seo/index.php';
+require_once __DIR__ . '/backend/api/index.php';
