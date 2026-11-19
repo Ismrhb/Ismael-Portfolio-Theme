@@ -7,6 +7,9 @@ function get_project_categories(int $id): array
     if (!$terms || is_wp_error($terms)) {
         return [];
     }
+    // -> Foto und Video zuerst, danach die übrigen Kategorien alphabetisch
+    $first = ['foto' => 0, 'video' => 1];
+    usort($terms, fn ($a, $b) => [$first[$a->slug] ?? 2, mb_strtolower($a->name)] <=> [$first[$b->slug] ?? 2, mb_strtolower($b->name)]);
     return array_map(fn ($term) => [
         'name' => $term->name,
         'slug' => $term->slug,
@@ -23,6 +26,9 @@ function get_used_project_categories(): array
     if (is_wp_error($terms)) {
         return [];
     }
+    // -> Foto und Video zuerst, danach die übrigen Kategorien alphabetisch
+    $first = ['foto' => 0, 'video' => 1];
+    usort($terms, fn ($a, $b) => [$first[$a->slug] ?? 2, mb_strtolower($a->name)] <=> [$first[$b->slug] ?? 2, mb_strtolower($b->name)]);
     return array_map(fn ($term) => [
         'name' => $term->name,
         'slug' => $term->slug,
@@ -35,29 +41,32 @@ function get_project_facts(int $id): array
     $facts = [
         'Datum' => carbon_get_post_meta($id, 'fact_date'),
         'Kunde' => carbon_get_post_meta($id, 'fact_client'),
+        'Leistung' => carbon_get_post_meta($id, 'fact_service'),
         'Aufwand' => carbon_get_post_meta($id, 'fact_effort'),
         'Inspiration' => carbon_get_post_meta($id, 'fact_inspiration'),
     ];
     return array_filter($facts);
 }
 
-// -> Daten eines Projekts für die Sammlung und die Startseite
+// -> Daten eines Projekts für die Projekte-Übersicht und die Startseite
 function get_project_teaser_by_id(int $id): array
 {
-    $teaser_image = carbon_get_post_meta($id, 'teaser_image');
-    $highlight_image = carbon_get_post_meta($id, 'highlight_image') ?: $teaser_image;
+    // -> Ohne Titelbild = 0, d.h. kein Bild
+    $highlight_image = carbon_get_post_meta($id, 'highlight_image') ?: 0;
     return [
         'id' => $id,
         'title' => get_the_title($id),
         'url' => get_permalink($id),
         'categories' => get_project_categories($id),
-        // -> Priorität in der Sammlung (gespeichert als Grösse: wide = hoch, narrow = niedrig)
+        // -> Priorität in der Projekte-Übersicht (gespeichert als Grösse: wide = hoch, narrow = niedrig)
         'priority' => ['wide' => 'high', 'narrow' => 'low'][carbon_get_post_meta($id, 'teaser_size')] ?? 'normal',
-        'teaser_image' => get_responsive_media($teaser_image, carbon_get_post_meta($id, 'teaser_image_mobile'), 'l'),
+        'teaser_image' => get_responsive_media($highlight_image, 0, 'l'),
         'highlight_image' => get_media_by_id($highlight_image, 'l'),
         'highlight_text' => carbon_get_post_meta($id, 'highlight_text'),
         // -> Bildbeschreibung aus der Mediathek, sonst der Projekttitel
         'alt' => get_post_meta((int) $highlight_image, '_wp_attachment_image_alt', true) ?: get_the_title($id),
+        // -> Optionales Titelvideo (läuft stumm in Schlaufe), Titelbild dient als Vorschau
+        'video' => carbon_get_post_meta($id, 'teaser_video') ? wp_get_attachment_url(carbon_get_post_meta($id, 'teaser_video')) : '',
     ];
 }
 
@@ -74,23 +83,13 @@ function get_projects(): array
     return array_map('get_project_teaser_by_id', $ids);
 }
 
-// -> Nächstes Projekt in der Reihenfolge der Sammlung (nach dem letzten folgt wieder das erste)
-function get_next_project(int $id): false|array
+// -> Alle anderen Projekte für "Andere Projekte", beginnend mit dem nächsten in der Reihenfolge der Projekte-Übersicht
+function get_other_projects(int $id): array
 {
-    $ids = get_posts([
-        'post_type' => 'project',
-        'post_status' => 'publish',
-        'numberposts' => -1,
-        'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
-        'fields' => 'ids',
-    ]);
-    $index = array_search($id, $ids, true);
-    if ($index === false || count($ids) < 2) {
-        return false;
+    $projects = get_projects();
+    $index = array_search($id, array_column($projects, 'id'), true);
+    if ($index === false) {
+        return $projects;
     }
-    $next = $ids[($index + 1) % count($ids)];
-    return [
-        'title' => get_the_title($next),
-        'url' => get_permalink($next),
-    ];
+    return array_merge(array_slice($projects, $index + 1), array_slice($projects, 0, $index));
 }
