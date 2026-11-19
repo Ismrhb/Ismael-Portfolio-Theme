@@ -6,16 +6,8 @@
  * Diese globalen Funktionen sind nicht Wordpress-spezifisch.
  */
 
-// -> PHP-Daten in der Browser-Konsole anzeigen
-function js_log(mixed ...$content): void
-{
-    foreach ($content as $c) {
-        echo '<script>console.log(' . json_encode($c) . ')</script>';
-    }
-}
-
 // -> Details einer Mediendatei anhand der ID laden
-function get_media_by_id(int|string $id, string $size = 'm'): false|array
+function get_media_by_id(int|string|null $id, string $size = 'm'): false|array
 {
     $id = (int) $id;
     if (!$id) {
@@ -35,6 +27,10 @@ function get_media_by_id(int|string $id, string $size = 'm'): false|array
     } else {
         $data['src'] = wp_get_attachment_url($id);
         $data['type'] = get_post_mime_type($id);
+    }
+    // -> Gibt es die Datei nicht mehr (z.B. in der Mediathek gelöscht), gilt das als kein Bild
+    if (empty($data['src'])) {
+        return false;
     }
     return $data;
 }
@@ -61,7 +57,7 @@ function get_menu_by_slug(string $slug): array
 }
 
 // -> Desktop- und optionales Mobile-Bild laden (ohne Mobile-Bild wird das Desktop-Bild verwendet)
-function get_responsive_media(int|string $id, int|string $mobile_id = 0, string $size = 'l'): false|array
+function get_responsive_media(int|string|null $id, int|string|null $mobile_id = 0, string $size = 'l'): false|array
 {
     $desktop = get_media_by_id($id, $size);
     if (!$desktop) {

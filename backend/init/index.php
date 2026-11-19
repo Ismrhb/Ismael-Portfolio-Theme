@@ -139,7 +139,7 @@ function block_disabled_design_pages (): void {
 
 add_action('admin_init', 'block_disabled_design_pages');
 
-// -> M8: Verkleinerte Bildgrössen als WebP speichern (Original bleibt erhalten).
+// -> Verkleinerte Bildgrössen als WebP speichern (Original bleibt erhalten).
 // Unterstützt der Server kein WebP, bleibt WordPress automatisch beim ursprünglichen Format.
 add_filter('image_editor_output_format', function (array $formats): array {
     $formats['image/jpeg'] = 'image/webp';

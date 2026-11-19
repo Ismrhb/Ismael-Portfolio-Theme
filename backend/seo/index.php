@@ -42,7 +42,7 @@ function get_seo_image(): false|array
         $id = get_queried_object_id();
         $image_id = carbon_get_post_meta($id, 'seo_image');
         if (!$image_id && get_post_type($id) === 'project') {
-            $image_id = carbon_get_post_meta($id, 'highlight_image') ?: carbon_get_post_meta($id, 'teaser_image');
+            $image_id = carbon_get_post_meta($id, 'highlight_image');
         }
     }
     $image_id = $image_id ?: get_globals_seo()['image'];
@@ -120,7 +120,7 @@ add_action('wp_head', function () {
     <?php
 }, 3);
 
-// -> M8: Portrait der Startseite früh vorladen, damit das grösste Bild (LCP) schneller erscheint
+// -> Portrait der Startseite früh vorladen, damit das grösste Bild (LCP) schneller erscheint
 add_action('wp_head', function () {
     if (!is_front_page()) {
         return;
