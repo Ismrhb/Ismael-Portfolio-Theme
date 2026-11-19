@@ -1,7 +1,7 @@
 <?php
 $menu = get_menu_by_slug('main');
 $current_url = trailingslashit(home_url($_SERVER['REQUEST_URI'] ?? '/'));
-// -> Auf Projektseiten ist der Menüpunkt der Sammlung aktiv
+// -> Auf Projektseiten ist der Menüpunkt der Projekte-Übersicht aktiv
 $collection_url = is_singular('project') ? trailingslashit(get_collection_url()) : '';
 ?>
 <header data-layout="header">

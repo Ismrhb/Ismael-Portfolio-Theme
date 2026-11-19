@@ -23,3 +23,4 @@
     <?php wp_head(); ?>
 </head>
 <body>
+<a class="skip-link" href="#inhalt">Zum Inhalt springen</a>

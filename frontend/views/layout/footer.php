@@ -4,7 +4,7 @@ $legal_menu = get_menu_by_slug('legals');
 $contact = get_globals_contact();
 $socials = get_globals_socials();
 ?>
-<?php // -> M2: Abschluss mit Kontakt am Ende jeder Seite, nur mobil und nur wenn die Seite keinen eigenen hat ?>
+<?php // -> Abschluss mit Kontakt am Ende jeder Seite, nur mobil und nur wenn die Seite keinen eigenen hat ?>
 <div class="page-cta">
     <?php get_template_part('frontend/views/partials/cta', null, ['title' => 'Lust auf ein gemeinsames Projekt?']) ?>
 </div>

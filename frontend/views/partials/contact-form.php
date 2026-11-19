@@ -8,7 +8,8 @@ $id = $args['id'] ?? 'form';
     <?php endif; ?>
     <h2 class="contact-title"><?= esc_html($form['title']) ?></h2>
     <input type="hidden" name="action" value="contact_form">
-    <?php wp_nonce_field('contact_form', 'contact_nonce', false) ?>
+    <?php // -> Sicherheits-Token ohne id, weil das Formular auf einer Seite zweimal vorkommen kann ?>
+    <input type="hidden" name="contact_nonce" value="<?= esc_attr(wp_create_nonce('contact_form')) ?>">
     <div class="contact-honeypot" aria-hidden="true">
         <label for="<?= $id ?>-website">Website</label>
         <input id="<?= $id ?>-website" type="text" name="website" tabindex="-1" autocomplete="off">
@@ -43,6 +44,10 @@ $id = $args['id'] ?? 'form';
         <textarea id="<?= $id ?>-message" name="message" rows="4" required aria-describedby="<?= $id ?>-message-error"></textarea>
         <p class="contact-error" id="<?= $id ?>-message-error"></p>
     </div>
+    <?php if (!empty($form['note'])) : ?>
+        <?php // -> Erwartung setzen: was nach dem Absenden passiert ?>
+        <p class="contact-note"><?= esc_html($form['note']) ?></p>
+    <?php endif; ?>
     <div class="contact-actions">
         <button class="button-submit" type="submit"><?= esc_html($args['submit'] ?? '' ?: 'Senden') ?></button>
         <?php if (!empty($args['phone']['phone'])) : ?>

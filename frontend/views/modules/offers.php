@@ -4,7 +4,7 @@ if (empty($data['items'])) {
     return;
 }
 ?>
-<section data-module="offers">
+<section data-module="offers" id="angebot">
     <div class="section-header">
         <?php if ($data['title']) : ?>
             <h2 class="section-title"><?= esc_html($data['title']) ?></h2>

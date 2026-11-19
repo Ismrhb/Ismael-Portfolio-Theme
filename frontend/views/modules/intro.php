@@ -27,6 +27,10 @@ $data = $args['data'];
             <?php // -> Mobil: Button auf dem Portrait führt zu den Projekten darunter ?>
             <a class="intro-portrait-projects" href="#projekte">Projekte</a>
         </div>
+        <?php if ($data['collection_url']) : ?>
+            <?php // -> Desktop: Link zur Projekte-Übersicht unter dem Portrait, weil das Projekt-Band rechts kein Ende hat ?>
+            <a class="text-link intro-aside-link" href="<?= esc_url($data['collection_url']) ?>">Alle Projekte ansehen</a>
+        <?php endif; ?>
     </div>
     <div class="intro-projects" id="projekte">
         <h2 class="visually-hidden">Ausgewählte Projekte</h2>

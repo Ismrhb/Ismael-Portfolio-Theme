@@ -16,7 +16,7 @@ $data = $args['data'];
                     <button class="button-contact" type="button" data-contact-open><?= esc_html($data['button']) ?></button>
                 <?php endif; ?>
                 <?php if ($data['process_link']) : ?>
-                    <a class="text-link" href="#ablauf"><?= esc_html($data['process_link']) ?></a>
+                    <a class="text-link" href="#angebot"><?= esc_html($data['process_link']) ?></a>
                 <?php endif; ?>
             </div>
             <?php if ($data['note']) : ?>
@@ -29,7 +29,8 @@ $data = $args['data'];
                     <?php get_template_part('frontend/views/partials/image', null, [
                         'image' => $image,
                         'class' => 'offer-intro-image',
-                        'sizes' => '(max-width: 768px) 50vw, 25vw',
+                        'sizes' => '(max-width: 768px) 33vw, 25vw',
+                        'eager' => true,
                     ]) ?>
                 <?php endforeach; ?>
             </div>

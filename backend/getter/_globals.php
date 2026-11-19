@@ -44,6 +44,7 @@ function get_globals_form(): array
     return [
         'title' => carbon_get_theme_option('form_title') ?: 'Let’s talk',
         'success' => carbon_get_theme_option('form_success') ?: 'Danke für deine Nachricht!',
+        'note' => carbon_get_theme_option('form_note'),
         'recipient' => carbon_get_theme_option('form_recipient') ?: get_option('admin_email'),
         'sender' => carbon_get_theme_option('form_sender'),
         'occasions' => ['Event', 'Portrait', 'Hochzeit', 'Anderes'],
@@ -51,7 +52,7 @@ function get_globals_form(): array
     ];
 }
 
-// -> Link zur Sammlung: aus "Globales" oder die erste Seite mit dem Baustein "Sammlung"
+// -> Link zur Projekte-Übersicht: aus "Globales" oder die erste Seite mit dem Baustein "Projekte-Übersicht"
 function get_collection_url(): string
 {
     static $url = null;

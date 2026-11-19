@@ -1,5 +1,5 @@
 <?php
-// -> Abschluss mit Frage, Kontakt-Button und optionalem leisem Link zur Sammlung
+// -> Abschluss mit Frage, Kontakt-Button und optionalem leisem Link zur Projekte-Übersicht
 $title = $args['title'] ?? '';
 $url = $args['collection_url'] ?? '';
 ?>
@@ -9,6 +9,6 @@ $url = $args['collection_url'] ?? '';
     <?php endif; ?>
     <button class="button-contact" type="button" data-contact-open>Kontakt</button>
     <?php if ($url) : ?>
-        <a class="cta-link" href="<?= esc_url($url) ?>"><?= esc_html($args['collection_label'] ?? 'oder zuerst die Sammlung ansehen') ?></a>
+        <a class="cta-link" href="<?= esc_url($url) ?>"><?= esc_html($args['collection_label'] ?? 'oder zuerst die Projekte ansehen') ?></a>
     <?php endif; ?>
 </div>

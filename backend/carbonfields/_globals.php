@@ -24,14 +24,22 @@ Container::make('theme_options', 'Globales')
         Field::make('text', 'form_sender', 'Absender-Adresse (E-Mail)')
             ->set_help_text('Von dieser Adresse werden die Anfragen verschickt. Sie muss beim Hosting als Postfach existieren, sonst wird die E-Mail oft blockiert.'),
         Field::make('text', 'form_title', 'Titel')->set_default_value('Let’s talk'),
+        Field::make('text', 'form_note', 'Satz über dem Senden-Button')
+            ->set_default_value('Ich freue mich, von dir zu hören, und melde mich innerhalb der nächsten 48 Stunden bei dir.')
+            ->set_help_text('Sagt, was nach dem Absenden passiert. Leer lassen, um ihn auszublenden.'),
         Field::make('text', 'form_success', 'Erfolgsmeldung')
             ->set_default_value('Danke für deine Nachricht! Ich melde mich so schnell wie möglich.'),
     ])
     ->add_tab('Seiten', [
-        Field::make('association', 'collection_page', 'Seite mit der Sammlung')
+        Field::make('association', 'collection_page', 'Seite mit der Projekte-Übersicht')
             ->set_types([['type' => 'post', 'post_type' => 'page']])
             ->set_max(1)
-            ->set_help_text('Wird für «Alle Projekte ansehen», «Zurück zur Sammlung» und den aktiven Menüpunkt auf Projektseiten verwendet. Leer lassen = die Seite mit dem Baustein «Sammlung» wird automatisch gesucht.'),
+            ->set_help_text('Wird für «Alle Projekte ansehen», «Andere Projekte» und den aktiven Menüpunkt auf Projektseiten verwendet. Leer lassen = die Seite mit dem Baustein «Projekte-Übersicht» wird automatisch gesucht.'),
+    ])
+    ->add_tab('Saison', [
+        Field::make('checkbox', 'snow', 'Schneeflocken anzeigen')
+            ->set_option_value('yes')
+            ->set_help_text('Lässt ganz dezent einzelne Schneeflocken über die Website gleiten. Im Frühling einfach wieder ausschalten.'),
     ])
     ->add_tab('SEO & Teilen', [
         Field::make('textarea', 'seo_description', 'Standard-Beschreibung für Google')
