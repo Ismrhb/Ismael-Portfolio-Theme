@@ -1,8 +1,7 @@
 <?php
 $data = $args['data'];
 ?>
-<section data-module="reels" class="<?= $data['facts'] ? 'has-facts' : '' ?>">
-    <?php get_template_part('frontend/views/partials/facts', null, ['facts' => $data['facts'], 'class' => 'facts-aside']) ?>
+<section data-module="reels">
     <div class="reels-list">
         <?php foreach ($data['items'] as $item) : ?>
             <div class="reel">

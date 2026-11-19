@@ -4,8 +4,7 @@ if (!$data['video_id']) {
     return;
 }
 ?>
-<section data-module="video" class="<?= $data['facts'] ? 'has-facts' : '' ?>">
-    <?php get_template_part('frontend/views/partials/facts', null, ['facts' => $data['facts'], 'class' => 'facts-aside']) ?>
+<section data-module="video">
     <div class="video-frame">
         <iframe
             src="https://www.youtube-nocookie.com/embed/<?= esc_attr($data['video_id']) ?>?rel=0"

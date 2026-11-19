@@ -7,7 +7,7 @@ if (empty($data['items'])) {
 ?>
 <section data-module="story">
     <?php foreach ($data['items'] as $item) : ?>
-        <div class="story-item">
+        <div class="story-item<?= !empty($item['flipped']) ? ' is-flipped' : '' ?>">
             <?php if ($item['title']) : ?>
                 <h2 class="story-title"><?= esc_html($item['title']) ?></h2>
             <?php endif; ?>
