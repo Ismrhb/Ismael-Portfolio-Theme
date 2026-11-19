@@ -30,10 +30,10 @@
     --text-3xl: 88px;
     --text-display: clamp(var(--text-2xl), 7vw, var(--text-3xl));
     /* layout */
-    --gap-around: var(--space-6);
+    --gap-around: var(--space-4);
     --gap-section: var(--space-7);
     --gap-grid: var(--space-3);
-    --page-width: 1370px;
+    --page-width: 1600px;
     /* -> Seitenrand, der auch auf grossen Bildschirmen mit der Inhaltsbreite übereinstimmt */
     --page-inset: max(var(--gap-around), (100% - var(--page-width)) / 2);
     --page-inset-vw: max(var(--gap-around), (100vw - var(--page-width)) / 2);
@@ -216,6 +216,7 @@ body {
     & .nav-link {
         display: block;
         padding: 0 var(--space-1);
+        border-radius: var(--radius-s);
         font: italic var(--text-l)/1.3 var(--font-serif);
         white-space: nowrap;
         background: linear-gradient(var(--color-blue), var(--color-blue)) no-repeat left / 0% 100%;
@@ -433,6 +434,9 @@ body {
         border-color: var(--color-green);
         background-color: var(--color-green);
     }
+    & .contact-note {
+        font: italic var(--text-m)/1.4 var(--font-serif);
+    }
     & .contact-privacy {
         font: var(--font-small);
         & a {
@@ -473,32 +477,76 @@ body {
 [data-page]:has(> [data-module="intro"]) {
     padding-bottom: 0;
 }
-[data-page="project"] {
-    & .project-back {
+/* -> "Andere Projekte" unten auf Projektseiten: endloses Band wie das Bild-Karussell,
+   die Bilder ganz links und rechts ragen über den Rand und sind leicht unscharf */
+.more-projects {
+    & .more-projects-title {
         width: min(100% - 2 * var(--gap-around), var(--page-width));
-        margin: var(--space-4) auto 0;
-        & + [data-module] {
-            margin-top: calc(var(--space-3) - var(--gap-section));
+        margin: 0 auto var(--space-3);
+        font: italic var(--text-m)/1.3 var(--font-serif);
+    }
+    & .more-projects-track {
+        --item-width: clamp(260px, 29vw, 460px);
+        display: flex;
+        gap: var(--space-4);
+        padding: var(--space-2) calc(50% - var(--item-width) / 2);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        &::-webkit-scrollbar {
+            display: none;
         }
     }
-    & .project-next {
-        width: min(100% - 2 * var(--gap-around), var(--page-width));
-        margin-inline: auto;
-    }
-    & .project-next-link {
-        display: inline-flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        transition: color 0.25s;
-        &:hover {
-            color: var(--color-blue);
+    & .more-project {
+        position: relative;
+        flex: 0 0 var(--item-width);
+        aspect-ratio: 19 / 10;
+        border-radius: var(--radius-l);
+        overflow: clip;
+        box-shadow: var(--shadow);
+        scroll-snap-align: center;
+        transition: filter 0.5s, transform 0.5s var(--ease);
+        &[data-distance="2"],
+        &[data-distance="3"] {
+            filter: blur(3px);
+            transform: scale(0.94);
+        }
+        & .more-project-image,
+        & img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        & .more-project-name {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            max-width: calc(100% - 2 * var(--space-3));
+            padding: var(--space-2) var(--space-5);
+            border-radius: var(--radius-s);
+            background-color: var(--color-blue);
+            color: var(--color-cream);
+            font: var(--font-button);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        &:hover .more-project-name,
+        &:focus-visible .more-project-name {
+            opacity: 1;
         }
     }
-    & .project-next-label {
-        font: var(--font-button);
-    }
-    & .project-next-title {
-        font: normal var(--text-2xl)/1.1 var(--font-serif);
+}
+/* -> Ohne Hovern (Handy, Tablet): Name auf dem mittleren Bild immer zeigen */
+@media (hover: none) {
+    .more-projects .more-project.is-active .more-project-name {
+        opacity: 1;
     }
 }
 
@@ -610,7 +658,7 @@ body {
         display: flex;
         flex-direction: column;
         gap: var(--space-4);
-        padding: var(--space-4) max(var(--space-6), var(--page-inset-vw)) var(--space-7) var(--space-6);
+        padding: var(--space-4) var(--page-inset-vw) var(--space-7) var(--space-6);
     }
     & .cta {
         margin-top: var(--space-5);
@@ -649,6 +697,64 @@ body {
 @keyframes typing-caret {
     50% { opacity: 0; }
 }
+/* -> Desktop: Projekte laufen rechts als endloses Band nach oben (Band wird in main.js aufgebaut) */
+[data-module="intro"]:has(.is-marquee) {
+    min-height: calc(100svh - var(--header-height) - var(--admin-bar));
+    & .intro-aside {
+        position: static;
+    }
+}
+.intro-projects.is-marquee {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    & .intro-all-projects,
+    & .cta {
+        display: none;
+    }
+    & .intro-marquee-track {
+        position: absolute;
+        inset: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        padding: var(--space-4) var(--page-inset-vw) var(--space-5) var(--space-6);
+        will-change: transform;
+    }
+}
+.intro-aside-link {
+    align-self: center;
+}
+
+/* -> Titelvideo liegt genau über dem Titelbild (das Titelbild dient als Vorschau) */
+.teaser-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    transition: filter 0.4s, transform 0.6s var(--ease);
+}
+.project-teaser-video {
+    border-radius: var(--radius-l);
+}
+.project-highlight .project-highlight-media {
+    position: relative;
+}
+.project-teaser .project-teaser-link:is(:hover, :focus-visible) .project-teaser-video {
+    filter: blur(6px) brightness(0.85);
+    transform: scale(1.04);
+}
+.project-highlight .project-highlight-link:hover .project-highlight-video {
+    transform: scale(1.03);
+}
+@media (prefers-reduced-motion: reduce) {
+    .teaser-video {
+        display: none;
+    }
+}
+
 /* -> Projekte-Button auf dem Portrait gibt es nur mobil */
 .intro-portrait-wrap {
     width: 100%;
@@ -767,11 +873,11 @@ body {
         display: grid;
         align-items: center;
         gap: var(--space-2) var(--space-5);
-        &:nth-child(odd) {
+        &:not(.is-flipped) {
             grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
             grid-template-areas: "title ." "image text";
         }
-        &:nth-child(even) {
+        &.is-flipped {
             grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
             grid-template-areas: ". title" "text image";
             & .story-text {
@@ -791,7 +897,7 @@ body {
         border-radius: var(--radius-l);
         box-shadow: var(--shadow);
     }
-    & .story-item:nth-child(even) .story-image {
+    & .story-item.is-flipped .story-image {
         aspect-ratio: 16 / 9;
     }
     & .story-text {
@@ -805,7 +911,7 @@ body {
         display: flex;
         flex-wrap: wrap;
         gap: var(--space-1);
-        margin-bottom: var(--space-2);
+        margin-top: var(--space-2);
     }
     & .title {
         font: var(--font-display);
@@ -823,26 +929,11 @@ body {
 [data-module="facts"] {
     & .facts-row {
         display: flex;
-        justify-content: space-between;
         flex-wrap: wrap;
-        gap: var(--space-3) var(--space-5);
+        gap: var(--space-3) var(--space-7);
     }
 }
 
-[data-module="video"],
-[data-module="reels"] {
-    &.has-facts {
-        display: grid;
-        grid-template-columns: var(--aside-width) minmax(0, 1fr);
-        align-items: center;
-        gap: var(--aside-gap);
-    }
-    & .facts-aside {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-5);
-    }
-}
 [data-module="video"] {
     & .video-frame {
         position: relative;
@@ -880,7 +971,6 @@ body {
 }
 
 [data-module="text"] {
-    padding-left: calc(var(--aside-width) + var(--aside-gap));
     & .text-content {
         max-width: 65ch;
         & > * + * {
@@ -910,36 +1000,176 @@ body {
 [data-page="page"] [data-module="text"] {
     padding-left: 0;
 }
-
-[data-module="gallery"] {
+/* -> Reihen: schmale Bausteine (Breite Hälfte/Drittel/Zwei Drittel) stehen nebeneinander im 12er-Raster,
+   vertikal mittig; Abstand wie in den Galerien */
+.module-row {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-auto-rows: clamp(180px, 23vw, 350px);
-    grid-auto-flow: dense;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--space-6);
+    width: min(100% - 2 * var(--gap-around), var(--page-width));
+    margin-inline: auto;
+    & .module-cell {
+        grid-column: span var(--span);
+        min-width: 0;
+    }
+    & [data-module] {
+        width: 100%;
+    }
+    & [data-module="reels"] .reels-list {
+        gap: var(--space-3);
+    }
+}
+[data-module="image"] {
+    & .image-module-image {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: var(--radius-l);
+        box-shadow: var(--shadow);
+    }
+}
+/* -> Leerraum: über die ganze Breite 48 px zusätzlicher Abstand, in einer Reihe nur freier Platz */
+[data-module="spacer"] {
+    height: 0;
+}
+[data-page] > [data-module="spacer"] {
+    margin-top: calc(var(--space-5) - var(--gap-section));
+}
+/* -> Nach dem Video näher heran (64 statt 96 px) */
+[data-module="video"] + [data-module="text"],
+[data-module="video"] + .module-row {
+    margin-top: calc(var(--space-6) - var(--gap-section));
+}
+
+/* -> Galerie als Bildreihen: Bilder einer Reihe gleich hoch, Breite nach Seitenverhältnis, ohne Zuschnitt */
+[data-module="gallery"].is-rows {
+    display: flex;
+    flex-direction: column;
     gap: var(--gap-grid);
     & .gallery-item {
-        grid-column: span 2;
         border-radius: var(--radius-l);
         overflow: clip;
         box-shadow: var(--shadow);
-        &[data-size="quarter"] {
-            grid-column: span 1;
-        }
-        &[data-size="three-quarter"] {
-            grid-column: span 3;
-        }
-        &[data-size="full"] {
-            grid-column: 1 / -1;
-        }
-        &[data-tall] {
-            grid-row: span 2;
-        }
     }
     & .gallery-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
+    & .gallery-row {
+        display: flex;
+        gap: var(--gap-grid);
+    }
+    & .gallery-item {
+        flex: var(--ratio) 1 0;
+        aspect-ratio: var(--ratio);
+        min-width: 0;
+    }
+}
+
+/* -> Projektseiten (Desktop): Einleitung über die ganze Breite und grösser, lange Texte zweispaltig über die ganze Breite */
+@media (min-width: 1025px) {
+    [data-page="project"] {
+        & [data-module="text"].is-long .text-content {
+            max-width: none;
+            columns: 2;
+            column-gap: var(--space-6);
+            /* -> Absätze dürfen zwischen den Spalten umbrechen, Zwischentitel bleiben bei ihrem Text */
+            & h2,
+            & h3 {
+                break-after: avoid-column;
+                break-inside: avoid-column;
+            }
+        }
+    }
+}
+
+/* -> Kurzer Text als erstes Feld der Galerie, die Bilder stehen rechts daneben */
+[data-module="gallery"].is-rows .gallery-text {
+    overflow: visible;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1em;
+    padding-right: var(--space-5);
+    & > * {
+        max-width: 60ch;
+    }
+    & a {
+        color: var(--color-blue);
+        font-weight: 700;
+    }
+}
+
+/* -> Projektseite: Untertitel und Einleitung links (Einleitung in Montserrat), Stammdaten rechts als Liste */
+[data-module="title"] {
+    & .title-intro {
+        margin-top: var(--space-3);
+        & .lead {
+            margin-top: 0;
+        }
+    }
+    & .subtitle {
+        font: var(--font-h3);
+    }
+    & .subtitle + .lead {
+        margin-top: var(--space-2);
+    }
+}
+[data-page="project"] [data-module="title"] {
+    & .title-intro {
+        margin-top: var(--space-5);
+        &.has-facts {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            /* -> Stammdaten vertikal mittig zu Untertitel und Einleitung */
+            align-items: center;
+            gap: var(--space-5) var(--space-7);
+        }
+    }
+    & .lead {
+        max-width: 65ch;
+        margin-top: 0;
+        font: 400 var(--text-m)/1.6 var(--font-sans);
+    }
+    & .subtitle + .lead {
+        margin-top: var(--space-2);
+    }
+    & .facts-table {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        gap: var(--space-1) var(--space-4);
+        margin: 0;
+        font: var(--font-body);
+        & dt {
+            font-weight: 700;
+        }
+        & dd {
+            margin: 0;
+        }
+    }
+}
+
+/* -> Alle Fliesstexte im Blocksatz; die Silbentrennung (Sprache de-CH) verhindert grosse Wortlücken.
+   Titel, Bezeichnungen, Buttons und zentrierte Zeilen bleiben ausgenommen. */
+main :is(p, li, .faq-answer):not(.subtitle, .cta-title, .kicker, .section-subtitle, .offer-price, .offer-intro-note, .contact-direct, .contact-error, .contact-status, .contact-privacy, .contact-note, .intro-tagline, .process-step-title, .tag) {
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+/* -> Infoblock einer Projektseite (Titel, Stammdaten, Text) enger zusammen, Galerie etwas näher */
+[data-module="title"] + [data-module="facts"],
+[data-module="title"] + [data-module="text"],
+[data-module="facts"] + [data-module="text"] {
+    margin-top: calc(var(--space-5) - var(--gap-section));
+}
+[data-module="text"] + [data-module="gallery"],
+[data-module="facts"] + [data-module="gallery"] {
+    margin-top: calc(var(--space-6) - var(--gap-section));
 }
 
 [data-module="carousel"] {
@@ -947,7 +1177,6 @@ body {
     & .carousel-title {
         width: min(100% - 2 * var(--gap-around), var(--page-width));
         margin: 0 auto var(--space-3);
-        padding-left: calc(var(--aside-width) + var(--aside-gap));
         font: var(--font-h2);
     }
     & .carousel-track {
@@ -969,9 +1198,15 @@ body {
         overflow: clip;
         box-shadow: var(--shadow);
         transform: scale(0.84);
-        transition: transform 0.5s var(--ease);
+        transition: transform 0.5s var(--ease), filter 0.5s;
         &.is-active {
             transform: scale(1);
+        }
+        /* -> Bilder ganz links und rechts: noch etwas kleiner und unscharf */
+        &[data-distance="2"],
+        &[data-distance="3"] {
+            filter: blur(3px);
+            transform: scale(0.76);
         }
     }
     & .carousel-image {
@@ -981,21 +1216,98 @@ body {
     }
 }
 
+/* -> Projekte-Übersicht: das Raster bleibt unsichtbar, bis main.js es angeordnet hat (kein Layout-Sprung).
+   Falls das Skript fehlt, erscheint es nach 1.5 s trotzdem. Auf dem Handy ist alles einspaltig, dort nicht nötig. */
+@media (min-width: 769px) {
+    [data-module="collection"] .collection-grid[data-pending] {
+        visibility: hidden;
+        animation: grid-ready 0s 1.5s forwards;
+    }
+}
+@keyframes grid-ready {
+    to {
+        visibility: visible;
+    }
+}
+
+/* -> Projekte-Übersicht: Titel links, rechts das Filter-Symbol (bleibt beim Scrollen oben stehen).
+   Das Symbol blendet die Kategorien ein: Desktop in derselben Zeile, Handy als Leiste darunter.
+   Der Kopf ist "display: contents", damit die Leiste direkt im Raster der Sektion klebt (sticky braucht ein hohes Elternelement). */
 [data-module="collection"] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3) var(--space-8);
     & .collection-header {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: var(--space-3) var(--space-8);
-        margin-bottom: var(--space-3);
+        display: contents;
     }
     & .collection-title {
+        position: relative;
+        z-index: 6;
         font: var(--font-display);
+    }
+    & .collection-tools {
+        position: sticky;
+        top: calc(var(--admin-bar) + var(--header-height));
+        z-index: 5;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: var(--space-3);
+        padding-block: var(--space-2);
+        transition: top 0.3s var(--ease);
+        /* -> Offen: cremefarbene Leiste über die ganze Fensterbreite, damit seitlich keine Bilder hervorschauen */
+        &.is-open {
+            background-color: var(--color-cream);
+            box-shadow: 0 0 0 100vmax var(--color-cream);
+            clip-path: inset(0 -100vmax);
+        }
+    }
+    & .filter-toggle {
+        position: relative;
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-s);
+        background-color: var(--color-cream);
+        color: var(--color-dark);
+        transition: background-color 0.2s, color 0.2s;
+        & .icon {
+            width: 24px;
+            height: 24px;
+        }
+        &:hover,
+        &[aria-expanded="true"] {
+            background-color: var(--color-blue);
+            color: var(--color-cream);
+        }
+        /* -> Grüner Punkt: eine Kategorie ist aktiv, obwohl der Filter zu ist */
+        &::after {
+            content: "";
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-green);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+    }
+    & .collection-tools.has-filter:not(.is-open) .filter-toggle::after {
+        opacity: 1;
     }
     & .collection-filter {
         display: flex;
         flex-wrap: wrap;
+        justify-content: flex-end;
         gap: var(--space-2);
+        &[hidden] {
+            display: none;
+        }
         & .tag {
             display: inline-flex;
             align-items: center;
@@ -1011,14 +1323,25 @@ body {
         }
     }
     & .collection-grid {
+        grid-column: 1 / -1;
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         grid-auto-rows: clamp(240px, 28vw, 420px);
         gap: var(--gap-grid);
+        transition: opacity 0.2s;
+        /* -> Beim Filtern kurz ausblenden, bevor die neue Auswahl hereingleitet */
+        &.is-filtering {
+            opacity: 0;
+        }
     }
 }
 .project-teaser {
-    view-transition-class: project-teaser;
+    transition: opacity 0.5s var(--ease-glide) var(--enter-delay, 0s), transform 0.6s var(--ease-glide) var(--enter-delay, 0s);
+    &.is-entering {
+        opacity: 0;
+        transform: translateY(var(--space-3));
+        transition: none;
+    }
     /* -> Breite (von 12 Spalten) wird in main.js pro Reihe gesetzt */
     grid-column: span var(--span, 4);
     &[hidden] {
@@ -1028,14 +1351,36 @@ body {
         position: relative;
         display: block;
         height: 100%;
-        &:hover {
+        /* -> Beim Darüberfahren: Foto leicht unscharf, Titel erscheint im blauen Feld (wie "Let’s talk" beim Portrait) */
+        &:hover,
+        &:focus-visible {
             & .project-teaser-image {
                 box-shadow: 0 10px 32px rgb(0 0 0 / 0.28);
             }
             & .project-teaser-image img {
-                transform: scale(1.03);
+                filter: blur(6px) brightness(0.85);
+                transform: scale(1.04);
+            }
+            & .project-teaser-title {
+                opacity: 1;
             }
         }
+    }
+    & .project-teaser-title {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        max-width: calc(100% - 2 * var(--space-3));
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-s);
+        background-color: var(--color-blue);
+        color: var(--color-cream);
+        font: normal var(--text-l)/1.2 var(--font-serif);
+        text-align: center;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+        transition: opacity 0.4s;
+        pointer-events: none;
     }
     & .project-teaser-image {
         display: block;
@@ -1048,7 +1393,7 @@ body {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.6s var(--ease);
+            transition: filter 0.4s, transform 0.6s var(--ease);
         }
     }
     & .tag {
@@ -1056,10 +1401,6 @@ body {
         top: var(--space-2);
         left: var(--space-2);
     }
-}
-::view-transition-group(.project-teaser) {
-    animation-duration: 0.5s;
-    animation-timing-function: var(--ease);
 }
 
 [data-module="contact"] {
@@ -1171,6 +1512,24 @@ body {
         width: min(100% - 2 * var(--gap-around), var(--page-width));
         margin-inline: auto;
     }
+    /* -> Collage: das erste Bild gross links, zwei kleine rechts */
+    & .offer-intro-collage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: var(--space-2);
+        aspect-ratio: 3 / 2;
+    }
+    & .offer-intro-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--radius-l);
+        box-shadow: var(--shadow);
+        &:first-child {
+            grid-row: span 2;
+        }
+    }
     & .offer-intro-title {
         margin-top: var(--space-2);
         font: var(--font-display);
@@ -1190,26 +1549,17 @@ body {
         margin-top: var(--space-2);
         font: var(--font-small);
     }
-    & .offer-intro-collage {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        gap: var(--space-2);
-        aspect-ratio: 3 / 2;
-    }
-    & .offer-intro-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: var(--radius-l);
-        box-shadow: var(--shadow);
-        &:first-child {
-            grid-row: span 2;
-        }
-    }
 }
 
 [data-module="offers"] {
+    /* -> «Zum Angebot»: Titel knapp unter dem Menü (den Platz fürs Menü hält scroll-padding auf html frei) */
+    scroll-margin-top: var(--space-3);
+    /* -> Kopien aus dem Handy-Karussell sind auf grossen Bildschirmen ausgeblendet */
+    @media (min-width: 769px) {
+        & .offer[data-clone] {
+            display: none;
+        }
+    }
     & .offers-list {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1405,7 +1755,7 @@ body {
     display: none;
 }
 
-/* -> M15: Bildansicht (Lightbox), nur mobil im Einsatz */
+/* -> Bildansicht (Lightbox): Bilder der Projektseite gross, mit Zurück/Weiter und Zähler */
 [data-layout="lightbox"] {
     --focus-color: var(--color-cream);
     width: 100%;
@@ -1441,12 +1791,56 @@ body {
         display: grid;
         place-items: center;
         flex: 0 0 100%;
-        padding: var(--space-8) var(--space-2);
+        padding: var(--space-7) var(--space-8) var(--space-8);
         scroll-snap-align: center;
         & img {
             max-width: 100%;
-            max-height: 100%;
+            max-height: calc(100dvh - var(--space-7) - var(--space-8));
             object-fit: contain;
+            border-radius: var(--radius-s);
+        }
+    }
+    & .lightbox-nav {
+        position: absolute;
+        right: 0;
+        bottom: var(--space-3);
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--space-5);
+        pointer-events: none;
+    }
+    & .lightbox-step {
+        min-height: 44px;
+        padding: var(--space-1) var(--space-3);
+        border-radius: var(--radius-s);
+        color: var(--color-cream);
+        font: var(--font-button);
+        pointer-events: auto;
+        transition: background-color 0.2s;
+        &:hover {
+            background-color: var(--color-blue);
+        }
+    }
+    & .lightbox-count {
+        min-width: 5ch;
+        font-size: var(--text-s);
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+}
+/* -> Handy: wischen statt Zurück/Weiter, nur der Zähler bleibt */
+@media (max-width: 768px) {
+    [data-layout="lightbox"] {
+        & .lightbox-item {
+            padding: var(--space-8) var(--space-2);
+            & img {
+                max-height: calc(100dvh - 2 * var(--space-8));
+            }
+        }
+        & .lightbox-step {
+            display: none;
         }
     }
 }
@@ -1454,9 +1848,24 @@ html:has([data-layout="lightbox"][open]) {
     overflow: hidden;
 }
 
+/* -> Saison: Schneeflocken über der ganzen Seite, klicken geht durch sie hindurch */
+.snow {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .snow {
+        display: none;
+    }
+}
+
 /* Bewegung: sanfte Übergänge auf der ganzen Website (bei "Bewegung reduzieren" aus) */
 
-/* -> A1: Inhalte gleiten beim Scrollen herein. Die Klasse .reveal setzt main.js nur bei Elementen unterhalb
+/* -> Inhalte gleiten beim Scrollen herein. Die Klasse .reveal setzt main.js nur bei Elementen unterhalb
    des sichtbaren Bereichs, darum wird beim Laden nichts verzögert. */
 .reveal {
     opacity: 0;
@@ -1467,22 +1876,27 @@ html:has([data-layout="lightbox"][open]) {
         transform: none;
     }
 }
-/* -> A3: Weiche Seitenwechsel; das angeklickte Projektbild gleitet ins Titelbild der Projektseite */
+/* -> Weiche Seitenwechsel; das angeklickte Projektbild gleitet ins Titelbild der Projektseite */
 @view-transition {
     navigation: auto;
+    types: seitenwechsel;
 }
 [data-layout="header"] {
     view-transition-name: site-header;
 }
-::view-transition-old(root) {
-    animation: page-out 0.25s var(--ease) both;
-}
-::view-transition-new(root) {
-    animation: page-in 0.45s var(--ease) both;
-}
-::view-transition-group(*) {
-    animation-duration: 0.5s;
-    animation-timing-function: var(--ease);
+/* -> Nur beim Wechsel zwischen Seiten: alte Seite blendet aus, neue gleitet herein.
+   Der Filter der Projekte-Übersicht hat seinen eigenen Übergang und ist davon nicht betroffen. */
+html:active-view-transition-type(seitenwechsel) {
+    &::view-transition-old(root) {
+        animation: page-out 0.25s var(--ease) both;
+    }
+    &::view-transition-new(root) {
+        animation: page-in 0.45s var(--ease) both;
+    }
+    &::view-transition-group(project-image) {
+        animation-duration: 0.5s;
+        animation-timing-function: var(--ease);
+    }
 }
 @keyframes page-out {
     to { opacity: 0; }
@@ -1491,7 +1905,7 @@ html:has([data-layout="lightbox"][open]) {
     from { opacity: 0; transform: translateY(var(--space-3)); }
 }
 
-/* -> A4: Buttons drücken sich beim Antippen leicht ein */
+/* -> Buttons drücken sich beim Antippen leicht ein */
 .button-contact,
 .button-submit,
 .button-block,
@@ -1502,7 +1916,7 @@ html:has([data-layout="lightbox"][open]) {
     }
 }
 
-/* -> A4: Fragen klappen weich auf und zu (in Browsern, die das schon können) */
+/* -> Fragen klappen weich auf und zu (in Browsern, die das schon können) */
 @supports (interpolate-size: allow-keywords) {
     [data-module="faq"] {
         interpolate-size: allow-keywords;
@@ -1517,7 +1931,7 @@ html:has([data-layout="lightbox"][open]) {
     }
 }
 
-/* -> B1: Tiefeneffekt: das Bild auf "Über mich" bewegt sich beim Scrollen langsamer als der Text */
+/* -> Tiefeneffekt: das Bild auf "Über mich" bewegt sich beim Scrollen langsamer als der Text */
 @supports (animation-timeline: view()) {
     [data-module="hero-image"] .hero-image-picture img {
         animation: hero-parallax linear both;
@@ -1530,7 +1944,51 @@ html:has([data-layout="lightbox"][open]) {
     to { transform: scale(1.08) translateY(8%); }
 }
 
-/* -> B2: Header mobil beim Runterscrollen ausblenden, beim Hochscrollen wieder zeigen */
+/* -> Eigener Mauszeiger (main.js): Punkt in Dunkelgrau mit Creme-Rand, über Klickbarem ein Ring */
+html.has-cursor,
+html.has-cursor * {
+    cursor: none;
+}
+html.has-cursor :is(input, textarea, select),
+html.has-cursor:has(dialog[open]),
+html.has-cursor:has(dialog[open]) * {
+    cursor: auto;
+}
+.cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border: 2px solid var(--color-cream);
+    border-radius: 50%;
+    background-color: var(--color-dark);
+    opacity: 0;
+    pointer-events: none;
+    transition: width 0.25s var(--ease), height 0.25s var(--ease), margin 0.25s var(--ease), background-color 0.25s, border-color 0.25s, opacity 0.2s;
+    &.is-visible {
+        opacity: 1;
+    }
+    /* -> Über Klickbarem: kleiner, dünner Ring */
+    &.is-hover {
+        width: 18px;
+        height: 18px;
+        margin: -9px 0 0 -9px;
+        border: 1.5px solid var(--color-dark);
+        background-color: transparent;
+        box-shadow: 0 0 0 1px var(--color-cream);
+    }
+    &.is-text {
+        opacity: 0;
+    }
+}
+html:has(dialog[open]) .cursor {
+    display: none;
+}
+
+/* -> Header mobil beim Runterscrollen ausblenden, beim Hochscrollen wieder zeigen */
 [data-layout="header"] {
     transition: transform 0.35s var(--ease);
     &.is-hidden {
@@ -1548,6 +2006,42 @@ html:has([data-layout="lightbox"][open]) {
 }
 
 /* Styling of utility classes, can be added anywhere in the project. */
+/* -> Sprunglink für Tastatur: erst beim Fokus sichtbar */
+.skip-link {
+    position: absolute;
+    top: calc(var(--admin-bar) + var(--space-1));
+    left: var(--space-1);
+    z-index: 200;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-s);
+    background-color: var(--color-blue);
+    color: var(--color-cream);
+    font: var(--font-button);
+    transform: translateY(-200%);
+    &:focus {
+        transform: none;
+    }
+}
+main:focus {
+    outline: none;
+}
+/* -> Fehlerseite */
+.is-404 {
+    & .kicker {
+        margin-bottom: var(--space-2);
+    }
+    & .button-contact {
+        display: inline-flex;
+        align-items: center;
+    }
+    & .error-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3);
+        margin-top: var(--space-4);
+    }
+}
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1772,9 +2266,6 @@ html:has([data-layout="lightbox"][open]) {
     [data-page]:has(> [data-module="intro"]) {
         padding-bottom: var(--gap-section);
     }
-    [data-page="project"] .project-next-title {
-        font-size: var(--text-xl);
-    }
 
     [data-module="intro"] {
         grid-template-columns: 1fr;
@@ -1859,8 +2350,8 @@ html:has([data-layout="lightbox"][open]) {
     }
 
     [data-module="story"] .story-item {
-        &:nth-child(odd),
-        &:nth-child(even) {
+        &:not(.is-flipped),
+        &.is-flipped {
             grid-template-columns: 1fr;
             grid-template-areas: "title" "image" "text";
             & .story-text {
@@ -1868,7 +2359,7 @@ html:has([data-layout="lightbox"][open]) {
                 max-width: none;
             }
         }
-        &:nth-child(odd) .story-image {
+        &:not(.is-flipped) .story-image {
             width: 64%;
         }
     }
@@ -1878,15 +2369,18 @@ html:has([data-layout="lightbox"][open]) {
         grid-template-columns: 1fr 1fr;
         gap: var(--space-3);
     }
-    [data-module="video"],
-    [data-module="reels"] {
-        &.has-facts {
-            grid-template-columns: 1fr;
+    /* -> Reihen mobil: Bausteine untereinander, Reels bleiben nebeneinander */
+    .module-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-5);
+        & .module-cell {
+            grid-column: auto;
         }
-        & .facts-aside {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-3);
+        & [data-module="reels"] .reels-list {
+            flex-wrap: nowrap;
+            & .reel {
+                flex: 1 1 0;
+            }
         }
     }
     [data-module="reels"] .reels-list {
@@ -1896,41 +2390,71 @@ html:has([data-layout="lightbox"][open]) {
             flex-basis: 100%;
         }
     }
-    [data-module="text"],
-    [data-module="carousel"] .carousel-title {
-        padding-left: 0;
+    /* -> Bildreihen mobil: jedes Bild in voller Breite untereinander, ohne Zuschnitt */
+    [data-page="project"] [data-module="title"] {
+        & .title-intro.has-facts {
+            grid-template-columns: 1fr;
+            gap: var(--space-4);
+        }
+        /* -> Kleinere Einleitung, damit der Blocksatz in der schmalen Spalte keine grossen Lücken reisst */
+        & .lead {
+            font-size: var(--text-s);
+        }
     }
-
-    [data-module="gallery"] {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: 42vw;
+    [data-module="gallery"].is-rows .gallery-row {
+        flex-direction: column;
         & .gallery-item {
-            &[data-size] {
-                grid-column: span 2;
-            }
-            &[data-size="quarter"] {
-                grid-column: span 1;
-            }
+            flex: none;
+            width: 100%;
+        }
+        & .gallery-text {
+            aspect-ratio: auto;
+            padding: 0 0 var(--space-2);
         }
     }
 
     [data-module="carousel"] .carousel-track {
         --item-width: 64vw;
     }
+    /* -> Andere Projekte mobil: kleinere Kacheln, die Nachbarn sind besser sichtbar */
+    .more-projects .more-projects-track {
+        --item-width: 56vw;
+        gap: var(--space-2);
+    }
 
     [data-module="collection"] {
-        & .collection-header {
-            gap: var(--space-2);
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-2);
+        /* -> Handy: die Leiste mit den Kategorien hat selbst den Hintergrund, darum hier kein Zuschnitt */
+        & .collection-tools.is-open {
+            background-color: transparent;
+            box-shadow: none;
+            clip-path: none;
+            /* -> Hintergrund der Zeile mit dem Symbol über die ganze Breite */
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                right: calc(-1 * var(--gap-around));
+                bottom: 0;
+                z-index: -1;
+                width: 100vw;
+                background-color: var(--color-cream);
+            }
         }
-        /* -> Filter in einer Zeile, seitlich wischbar */
+        /* -> Handy: Titel und Symbol in einer Zeile; die Kategorien klappen als wischbare Leiste darunter auf */
         & .collection-filter {
+            position: absolute;
+            top: 100%;
+            right: calc(-1 * var(--gap-around));
+            justify-content: flex-start;
             flex-wrap: nowrap;
             gap: var(--space-1);
-            width: calc(100% + 2 * var(--gap-around));
-            margin-inline: calc(-1 * var(--gap-around));
-            padding-inline: var(--gap-around);
+            width: 100vw;
+            padding: 0 var(--gap-around) var(--space-2);
             overflow-x: auto;
             scrollbar-width: none;
+            background-color: var(--color-cream);
             &::-webkit-scrollbar {
                 display: none;
             }
@@ -1944,6 +2468,9 @@ html:has([data-layout="lightbox"][open]) {
             gap: var(--space-2);
         }
     }
+    body:has([data-layout="header"].is-hidden) [data-module="collection"] .collection-tools {
+        top: var(--admin-bar);
+    }
     .project-teaser {
         grid-column: 1 / -1;
         & .project-teaser-image {
@@ -1955,6 +2482,15 @@ html:has([data-layout="lightbox"][open]) {
         }
         & .project-teaser-link:active .project-teaser-image {
             transform: scale(0.98);
+        }
+        /* -> Mobil kein Darüberfahren: Titel bleibt nur für Google und Screenreader im HTML */
+        & .project-teaser-title {
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
         }
     }
 
@@ -1975,12 +2511,57 @@ html:has([data-layout="lightbox"][open]) {
 
     [data-module="offer-intro"] {
         padding-block: var(--space-5) var(--space-6);
+    }
+    /* -> Angebot-Einstieg mobil: Text zuerst, darunter die Bilder als flache Reihe (Buttons bleiben im ersten Blick) */
+    [data-module="offer-intro"] {
         & .offer-intro-inner {
             grid-template-columns: 1fr;
-            gap: var(--space-5);
+            gap: var(--space-4);
+        }
+        & .offer-intro-collage {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-rows: auto;
+            aspect-ratio: auto;
+        }
+        & .offer-intro-image {
+            aspect-ratio: 3 / 4;
+            border-radius: var(--radius-s);
+            &:first-child {
+                grid-row: auto;
+            }
         }
     }
-    [data-module="offers"] .offers-list,
+    /* -> Andere Projekte mobil: nur Bilder, ohne Namen auf der Kachel */
+    .more-projects .more-project .more-project-name {
+        display: none;
+    }
+    /* -> Angebotskarten mobil: eine Karte gross in der Mitte, die Nachbarn kleiner und leicht verschwommen (main.js) */
+    [data-module="offers"] {
+        /* -> Das Menü blendet sich beim Springen aus: dessen freigehaltenen Platz wieder abziehen */
+        scroll-margin-top: calc(var(--space-3) - var(--header-height));
+        & .offers-list {
+            --item-width: 82vw;
+            display: flex;
+            gap: var(--space-2);
+            margin-inline: calc(-1 * var(--gap-around));
+            padding: var(--space-2) calc(50% + var(--gap-around) - var(--item-width) / 2);
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+        & .offer {
+            flex: 0 0 var(--item-width);
+            scroll-snap-align: center;
+            transition: transform 0.5s var(--ease), filter 0.5s;
+            &[data-distance]:not([data-distance="0"]) {
+                filter: blur(2px);
+                transform: scale(0.92);
+            }
+        }
+    }
     [data-module="process"] .process-phases,
     [data-module="faq"] {
         grid-template-columns: 1fr;
@@ -1991,13 +2572,13 @@ html:has([data-layout="lightbox"][open]) {
     [data-module="faq"] {
         gap: var(--space-3);
     }
-    /* -> M3: Logo mit 44 px Klickfläche */
+    /* -> Logo mit 44 px Klickfläche */
     [data-layout="header"] .logo {
         justify-content: center;
         min-height: 44px;
     }
 
-    /* -> S5, S6, M7: Startseite kompakter, Bilder mit 16 px Abstand, danach ein Button zur Sammlung */
+    /* -> Startseite kompakter, Bilder mit 16 px Abstand, danach ein Button zur Projekte-Übersicht */
     /* -> Erster Bildschirm: Titel oben, Portrait unten am Bildschirmrand */
     [data-module="intro"] {
         & .intro-aside {
@@ -2034,6 +2615,9 @@ html:has([data-layout="lightbox"][open]) {
             & .intro-portrait-hover {
                 display: none;
             }
+        }
+        & .intro-aside-link {
+            display: none;
         }
         & .intro-portrait-projects {
             position: absolute;
@@ -2093,7 +2677,7 @@ html:has([data-layout="lightbox"][open]) {
         text-align: left;
     }
 
-    /* -> M2: Abschluss mit Kontakt am Ende jeder Seite, wenn die Seite keinen eigenen hat */
+    /* -> Abschluss mit Kontakt am Ende jeder Seite, wenn die Seite keinen eigenen hat */
     .page-cta {
         display: block;
         width: calc(100% - 2 * var(--gap-around));
@@ -2104,12 +2688,12 @@ html:has([data-layout="lightbox"][open]) {
         display: none;
     }
 
-    /* -> M10: Bild auf "Über mich" höchstens 60 % der Bildschirmhöhe */
+    /* -> Bild auf "Über mich" höchstens 60 % der Bildschirmhöhe */
     [data-module="hero-image"] .hero-image-picture img {
         max-height: 60svh;
     }
 
-    /* -> M14: Projektseite mobil: Label, Titel, Titelbild, kurze Einleitung */
+    /* -> Projektseite mobil: Label, Titel, Titelbild, kurze Einleitung */
     [data-module="title"] {
         & .title-image {
             display: block;

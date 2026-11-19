@@ -27,15 +27,19 @@ const contactDialog = document.querySelector('[data-layout="contact"]');
 
 if (contactDialog) {
     const occasionField = contactDialog.querySelector('[name="occasion"]');
-    document.querySelectorAll('[data-contact-open]').forEach((button) => {
-        button.addEventListener('click', () => {
-            // -> Buttons mit data-occasion (z.B. auf der Angebotsseite) wählen den Anlass vor
-            if (occasionField && button.dataset.occasion) {
-                occasionField.value = button.dataset.occasion;
-            }
-            contactDialog.showModal();
-            document.documentElement.classList.add('is-locked');
-        });
+    // -> Per Delegation, damit auch kopierte Elemente (Endlos-Bänder) das Formular öffnen
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-contact-open]');
+        // -> In einer seitlichen Angebotskarte holt der Klick erst die Karte in die Mitte
+        if (!button || button.closest('.is-loop .offer:not(.is-active)')) {
+            return;
+        }
+        // -> Buttons mit data-occasion (z.B. auf der Angebotsseite) wählen den Anlass vor
+        if (occasionField && button.dataset.occasion) {
+            occasionField.value = button.dataset.occasion;
+        }
+        contactDialog.showModal();
+        document.documentElement.classList.add('is-locked');
     });
     contactDialog.addEventListener('close', () => {
         document.documentElement.classList.remove('is-locked');
@@ -151,7 +155,7 @@ document.querySelectorAll('[data-contact-form]').forEach((form) => {
     });
 });
 
-// -> Sammlung: bei jedem Besuch neu gemischtes Raster mit Reihen aus 2, 3 oder 4 Projekten
+// -> Projekte-Übersicht: bei jedem Besuch neu gemischtes Raster mit Reihen aus 2, 3 oder 4 Projekten
 // Das Raster hat 12 Spalten; jedes Muster beschreibt die Breiten einer Reihe.
 const rowPatterns = {
     2: [[8, 4], [4, 8], [6, 6], [7, 5], [5, 7]],
@@ -214,10 +218,9 @@ document.querySelectorAll('[data-module="collection"]').forEach((collection) => 
     const filter = collection.querySelector('.collection-filter');
     const teasers = [...grid.querySelectorAll('.project-teaser')];
 
-    teasers.forEach((teaser) => {
-        teaser.style.viewTransitionName = `project-${teaser.dataset.id}`;
-    });
     layoutCollection(grid);
+    // -> Erst jetzt zeigen: so springen die Kacheln beim Laden nicht an neue Plätze
+    grid.removeAttribute('data-pending');
     // -> Beim Wechsel zwischen Tablet und Desktop neu anordnen
     window.matchMedia('(max-width: 1024px)').addEventListener('change', () => layoutCollection(grid));
 
@@ -225,11 +228,20 @@ document.querySelectorAll('[data-module="collection"]').forEach((collection) => 
         return;
     }
     const buttons = [...filter.querySelectorAll('[data-filter]')];
-    // -> Mehrere Kategorien wählbar: gezeigt wird jedes Projekt, das in mindestens einer davon ist
-    // -> Auswahl aus der URL übernehmen, z.B. ?kategorie=hochzeiten,video
+    const tools = collection.querySelector('.collection-tools');
+    const toggle = collection.querySelector('.filter-toggle');
+    // -> Filter-Symbol: Kategorien ein- und ausblenden
+    const setFilterOpen = (open) => {
+        filter.hidden = !open;
+        tools.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open ? 'Filter ausblenden' : 'Filter einblenden');
+    };
+    toggle.addEventListener('click', () => setFilterOpen(filter.hidden));
+    // -> Immer nur eine Kategorie aktiv (oder "Alle"); Auswahl aus der URL übernehmen, z.B. ?kategorie=video
     const slugs = buttons.map((button) => button.dataset.filter).filter(Boolean);
-    const fromUrl = (new URL(location.href).searchParams.get('kategorie') ?? '').split(',');
-    const selected = new Set(fromUrl.filter((slug) => slugs.includes(slug)));
+    const fromUrl = (new URL(location.href).searchParams.get('kategorie') ?? '').split(',')[0];
+    const selected = new Set(slugs.includes(fromUrl) ? [fromUrl] : []);
 
     const applyFilter = () => {
         buttons.forEach((button) => {
@@ -242,6 +254,8 @@ document.querySelectorAll('[data-module="collection"]').forEach((collection) => 
             teaser.hidden = selected.size > 0 && !categories.some((slug) => selected.has(slug));
         });
         layoutCollection(grid);
+        // -> Grüner Punkt am Symbol, wenn eine Kategorie aktiv ist
+        tools.classList.toggle('has-filter', selected.size > 0);
         // -> Gefilterte Ansicht in die URL schreiben, damit man sie teilen kann
         const url = new URL(location.href);
         if (selected.size) {
@@ -251,34 +265,71 @@ document.querySelectorAll('[data-module="collection"]').forEach((collection) => 
         }
         history.replaceState(null, '', url);
     };
+    // -> Mit einer Kategorie in der Adresse (z.B. ?kategorie=video) ist der Filter gleich offen
     if (selected.size) {
         applyFilter();
+        setFilterOpen(true);
     }
+
+    // -> Filtern: Raster kurz ausblenden, neu anordnen, dann gleiten die Bilder nacheinander herein
+    // (ohne Verzerren; das Raster ändert sich ja komplett)
+    let filterTimer = null;
+    const animateFilter = () => {
+        if (reduceMotion) {
+            applyFilter();
+            return;
+        }
+        clearTimeout(filterTimer);
+        grid.classList.add('is-filtering');
+        filterTimer = setTimeout(() => {
+            applyFilter();
+            const visible = teasers.filter((teaser) => !teaser.hidden);
+            visible.forEach((teaser, index) => {
+                teaser.style.setProperty('--enter-delay', `${Math.min(index, 8) * 0.05}s`);
+                teaser.classList.add('is-entering');
+            });
+            grid.classList.remove('is-filtering');
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                visible.forEach((teaser) => teaser.classList.remove('is-entering'));
+            }));
+        }, 220);
+    };
 
     buttons.forEach((button) => {
         button.addEventListener('click', () => {
-            // -> "Alle" leert die Auswahl, ein Klick auf eine aktive Kategorie wählt sie wieder ab
+            // -> Eine andere Kategorie ersetzt die aktive; "Alle" oder ein zweiter Klick auf die aktive zeigt wieder alles
             const slug = button.dataset.filter;
-            if (!slug) {
-                selected.clear();
-            } else if (selected.has(slug)) {
-                selected.delete(slug);
-            } else {
+            const wasActive = selected.has(slug);
+            selected.clear();
+            if (slug && !wasActive) {
                 selected.add(slug);
             }
-            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (document.startViewTransition && !reduceMotion) {
-                document.startViewTransition(applyFilter);
-            } else {
-                applyFilter();
-            }
+            animateFilter();
         });
     });
 });
 
-// -> Karussell: das Bild in der Mitte wird grösser dargestellt
-document.querySelectorAll('[data-module="carousel"] .carousel-track').forEach((track) => {
-    const items = [...track.querySelectorAll('.carousel-item')];
+// -> Endloses Band (Bild-Karussell und "Andere Projekte"): das Element in der Mitte ist aktiv,
+// die Nachbarn bekommen data-distance (1, 2, 3) für Grösse und Unschärfe im CSS.
+// Klick auf ein seitliches Element holt es in die Mitte; bei Links öffnet erst der Klick auf das mittlere.
+const setupLoopTrack = (track, itemSelector, startIndex = null) => {
+    const originals = [...track.querySelectorAll(itemSelector)];
+    originals.forEach((item, index) => {
+        item.dataset.index = index;
+    });
+    // -> Für den Endloseffekt je eine Kopie aller Elemente vor und nach den Originalen
+    if (originals.length > 2) {
+        const makeCopies = () => originals.map((item) => {
+            const copy = item.cloneNode(true);
+            copy.dataset.clone = item.dataset.index;
+            copy.setAttribute('aria-hidden', 'true');
+            copy.tabIndex = -1;
+            return copy;
+        });
+        track.prepend(...makeCopies());
+        track.append(...makeCopies());
+    }
+    const items = [...track.querySelectorAll(itemSelector)];
 
     const centerItem = (item, behavior = 'smooth') => {
         const trackRect = track.getBoundingClientRect();
@@ -287,53 +338,108 @@ document.querySelectorAll('[data-module="carousel"] .carousel-track').forEach((t
         track.scrollBy({ left: offset, behavior });
     };
 
-    const updateActive = () => {
+    const activeIndex = () => {
         const trackRect = track.getBoundingClientRect();
         const center = trackRect.left + trackRect.width / 2;
-        let closest = items[0];
+        let closest = 0;
         let closestDistance = Infinity;
-        items.forEach((item) => {
+        items.forEach((item, index) => {
             const rect = item.getBoundingClientRect();
             const distance = Math.abs(rect.left + rect.width / 2 - center);
             if (distance < closestDistance) {
-                closest = item;
+                closest = index;
                 closestDistance = distance;
             }
         });
-        items.forEach((item) => item.classList.toggle('is-active', item === closest));
+        return closest;
+    };
+
+    const updateActive = () => {
+        const active = activeIndex();
+        items.forEach((item, index) => {
+            const distance = Math.min(Math.abs(index - active), 3);
+            item.classList.toggle('is-active', distance === 0);
+            item.dataset.distance = distance;
+        });
+    };
+
+    // -> Steht eine Kopie in der Mitte, unbemerkt um eine Runde zurück zu den Originalen springen
+    const recenter = () => {
+        const active = items[activeIndex()];
+        if (!active || active.dataset.clone === undefined) {
+            return;
+        }
+        const loop = originals[0].offsetLeft - items[0].offsetLeft;
+        const before = items.indexOf(active) < originals.length;
+        track.scrollBy({ left: before ? loop : -loop, behavior: 'instant' });
+        updateActive();
     };
 
     let frame = null;
+    let settle = null;
     track.addEventListener('scroll', () => {
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(updateActive);
+        clearTimeout(settle);
+        settle = setTimeout(recenter, 150);
     }, { passive: true });
     items.forEach((item) => {
-        item.addEventListener('click', () => centerItem(item));
+        item.addEventListener('click', (event) => {
+            if (item.matches('a') && item.classList.contains('is-active')) {
+                return;
+            }
+            event.preventDefault();
+            centerItem(item);
+        });
     });
     track.addEventListener('keydown', (event) => {
-        const active = items.findIndex((item) => item.classList.contains('is-active'));
-        if (event.key === 'ArrowRight' && items[active + 1]) {
+        const direction = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+        const next = items[activeIndex() + (direction ?? 0)];
+        if (direction && next) {
             event.preventDefault();
-            centerItem(items[active + 1]);
-        }
-        if (event.key === 'ArrowLeft' && items[active - 1]) {
-            event.preventDefault();
-            centerItem(items[active - 1]);
+            centerItem(next);
         }
     });
 
-    centerItem(items[Math.floor(items.length / 2)], 'instant');
+    // -> Startposition: angegebenes Element, sonst das mittlere. Direkt über die Position setzen und das Einrasten
+    // kurz ausschalten, sonst rastet der Browser beim ersten Laden teilweise ein Element daneben ein.
+    const start = originals[startIndex ?? Math.floor(originals.length / 2)] ?? items[0];
+    const snap = track.style.scrollSnapType;
+    track.style.scrollSnapType = 'none';
+    track.scrollLeft = start.offsetLeft - items[0].offsetLeft + parseFloat(getComputedStyle(track).paddingLeft) + start.offsetWidth / 2 - track.clientWidth / 2;
     updateActive();
-});
+    requestAnimationFrame(() => {
+        track.style.scrollSnapType = snap;
+    });
+};
 
-// -> M15: Bilder der Projektseite mobil antippen = Vollbild, wischen zum nächsten Bild
+document.querySelectorAll('[data-module="carousel"] .carousel-track').forEach((track) => setupLoopTrack(track, '.carousel-item'));
+// -> Bei "Andere Projekte" steht das nächste Projekt zuerst in der Mitte
+document.querySelectorAll('.more-projects-track').forEach((track) => setupLoopTrack(track, '.more-project', 0));
+
+// -> Angebotskarten (Handy): eine Karte gross in der Mitte, die Nachbarn leicht verschwommen, endlos im Kreis.
+// Auf dem Desktop bleiben die drei Karten nebeneinander (die Kopien blendet das CSS dort aus).
+const offersList = document.querySelector('[data-module="offers"] .offers-list');
+const offersMobile = window.matchMedia('(max-width: 768px)');
+const setupOffers = () => {
+    if (offersList && offersMobile.matches && !offersList.classList.contains('is-loop')) {
+        offersList.classList.add('is-loop');
+        setupLoopTrack(offersList, '.offer', 0);
+    }
+};
+setupOffers();
+offersMobile.addEventListener('change', setupOffers);
+
+// -> Bildansicht: Bilder der Projektseite anklicken = gross ansehen und durchklicken
+// (Desktop: Zurück/Weiter und Pfeiltasten; Handy: wischen). Im Karussell öffnet auf dem Desktop nur das
+// mittlere Bild die Ansicht, ein Klick auf ein seitliches holt es wie bisher in die Mitte.
 const lightbox = document.querySelector('[data-layout="lightbox"]');
-const lightboxImages = [...document.querySelectorAll('[data-page="project"] :is(.gallery-image, .carousel-image)')];
+const lightboxImages = [...document.querySelectorAll('[data-page="project"] :is(.gallery-image, .image-module-image, .carousel-item:not([data-clone]) .carousel-image)')];
 const isMobile = window.matchMedia('(max-width: 768px)');
 
 if (lightbox && lightboxImages.length) {
     const track = lightbox.querySelector('.lightbox-track');
+    const count = lightbox.querySelector('.lightbox-count');
     // -> Grösste Variante aus dem srcset verwenden
     const largestSource = (image) => {
         const candidates = (image.getAttribute('srcset') || '').split(',').map((entry) => {
@@ -341,6 +447,17 @@ if (lightbox && lightboxImages.length) {
             return { url, width: parseInt(width, 10) || 0 };
         }).filter((candidate) => candidate.url);
         return candidates.sort((a, b) => b.width - a.width)[0]?.url || image.currentSrc || image.src;
+    };
+    const currentIndex = () => Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
+    const updateCount = () => {
+        count.textContent = `${currentIndex() + 1} / ${lightboxImages.length}`;
+    };
+    // -> Am Ende geht es wieder von vorne los
+    const goTo = (index, behavior = 'smooth') => {
+        const total = lightboxImages.length;
+        const target = (index + total) % total;
+        const jump = Math.abs(target - currentIndex()) > 1 ? 'instant' : behavior;
+        track.scrollTo({ left: track.children[target].offsetLeft, behavior: jump });
     };
 
     lightboxImages.forEach((image, index) => {
@@ -352,9 +469,9 @@ if (lightbox && lightboxImages.length) {
         item.append(copy);
         track.append(item);
 
-        // -> Capture-Phase: auf dem Handy öffnet das Antippen die Ansicht statt das Karussell zu verschieben
-        image.closest('.gallery-item, .carousel-item').addEventListener('click', (event) => {
-            if (!isMobile.matches) {
+        const open = (event) => {
+            const carouselItem = event.currentTarget.closest('.carousel-item');
+            if (carouselItem && !isMobile.matches && !carouselItem.classList.contains('is-active')) {
                 return;
             }
             event.stopPropagation();
@@ -362,19 +479,38 @@ if (lightbox && lightboxImages.length) {
                 img.src ||= img.dataset.src;
             });
             lightbox.showModal();
-            // -> Erst nach dem Öffnen hat die Spur ihre Breite, dann zum angetippten Bild springen
+            // -> Erst nach dem Öffnen hat die Spur ihre Breite, dann zum angeklickten Bild springen
             requestAnimationFrame(() => {
-                track.scrollTo({ left: track.children[index].offsetLeft, behavior: 'instant' });
+                goTo(index, 'instant');
+                updateCount();
+                track.focus({ preventScroll: true });
             });
-        }, { capture: true });
+        };
+        // -> Capture-Phase: das Antippen öffnet die Ansicht statt das Karussell zu verschieben.
+        // Im Endlos-Karussell öffnen auch die Kopien eines Bildes dieselbe Ansicht.
+        const original = image.closest('.gallery-item, .carousel-item, [data-module="image"]');
+        const copies = original.matches('.carousel-item')
+            ? [...original.parentElement.querySelectorAll(`[data-clone="${original.dataset.index}"]`)]
+            : [];
+        [original, ...copies].forEach((target) => target.addEventListener('click', open, { capture: true }));
     });
 
     lightbox.querySelector('[data-lightbox-close]').addEventListener('click', () => lightbox.close());
-    track.addEventListener('keydown', (event) => {
+    lightbox.querySelectorAll('[data-lightbox-step]').forEach((button) => {
+        button.addEventListener('click', () => goTo(currentIndex() + Number(button.dataset.lightboxStep)));
+    });
+    // -> Klick neben das Bild (auf die dunkle Fläche) schliesst die Ansicht
+    track.addEventListener('click', (event) => {
+        if (event.target.classList.contains('lightbox-item')) {
+            lightbox.close();
+        }
+    });
+    track.addEventListener('scroll', updateCount, { passive: true });
+    lightbox.addEventListener('keydown', (event) => {
         const direction = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
         if (direction) {
             event.preventDefault();
-            track.scrollBy({ left: track.clientWidth * direction, behavior: 'smooth' });
+            goTo(currentIndex() + direction);
         }
     });
 }
@@ -418,12 +554,12 @@ if (typingHeading) {
     }, delay + 900);
 }
 
-// -> A1: Inhalte gleiten beim Scrollen herein (nur Elemente, die beim Laden noch nicht sichtbar sind)
+// -> Inhalte gleiten beim Scrollen herein (nur Elemente, die beim Laden noch nicht sichtbar sind)
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealSelector = [
     '.project-highlight', '.project-teaser', '.story-item', '.offer', '.process-phase', '.faq-item',
-    '.gallery-item', '.video-frame', '.reel', '.testimonial', '.section-header', '.cta',
-    '[data-module="text"] .text-content', '[data-module="facts"]', '.project-next',
+    '.gallery-item', '.video-frame', '.reel', '.image-module-image', '.testimonial', '.section-header', '.cta',
+    '[data-module="text"] .text-content', '[data-module="facts"]', '.more-projects',
 ].join(', ');
 
 if (!reduceMotion && 'IntersectionObserver' in window) {
@@ -452,7 +588,7 @@ if (!reduceMotion && 'IntersectionObserver' in window) {
     });
 }
 
-// -> B2: Header am Handy beim Runterscrollen ausblenden, beim Hochscrollen wieder zeigen
+// -> Header am Handy beim Runterscrollen ausblenden, beim Hochscrollen wieder zeigen
 if (header && !reduceMotion) {
     let lastY = window.scrollY;
     let ticking = false;
@@ -469,4 +605,251 @@ if (header && !reduceMotion) {
             ticking = false;
         });
     }, { passive: true });
+}
+
+// -> Titelvideos der Projekte: nur abspielen, solange sie sichtbar sind (spart Leistung und Daten).
+// Bei "Bewegung reduzieren" oder aktivem Datensparmodus bleibt das Titelbild stehen.
+let teaserVideoObserver = null;
+const observeTeaserVideos = (root = document) => {
+    if (reduceMotion || navigator.connection?.saveData) {
+        return;
+    }
+    teaserVideoObserver ??= new IntersectionObserver((entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+            if (isIntersecting) {
+                target.play().catch(() => {});
+            } else {
+                target.pause();
+            }
+        });
+    }, { rootMargin: '200px 0px' });
+    root.querySelectorAll('[data-teaser-video]').forEach((video) => teaserVideoObserver.observe(video));
+};
+observeTeaserVideos();
+
+// -> Startseite Desktop: Projekte laufen rechts als endloses Band langsam nach oben.
+// Maus darüber = Pause, Mausrad bewegt das Band von Hand. Mobil und bei "Bewegung reduzieren" normale Liste.
+const marqueeBox = document.querySelector('[data-module="intro"] .intro-projects');
+const marqueeDesktop = window.matchMedia('(min-width: 769px)');
+
+if (marqueeBox && !reduceMotion) {
+    const originals = [...marqueeBox.querySelectorAll('.project-highlight')];
+    const speed = 35;
+    let track = null;
+    let offset = 0;
+    let loop = 0;
+    let paused = false;
+    let last = 0;
+    let frame = null;
+
+    // -> Kopie eines Projekts: für Screenreader und Tastatur unsichtbar, ohne Namen für Seitenübergänge
+    const cloneProject = (project) => {
+        const copy = project.cloneNode(true);
+        copy.classList.remove('reveal', 'is-visible');
+        copy.setAttribute('aria-hidden', 'true');
+        copy.querySelectorAll('a').forEach((link) => { link.tabIndex = -1; });
+        copy.querySelectorAll('[style*="view-transition-name"]').forEach((element) => {
+            element.style.removeProperty('view-transition-name');
+        });
+        observeTeaserVideos(copy);
+        return copy;
+    };
+
+    // -> Länge einer Runde messen und so viele Kopien anhängen, dass das Band nie leer wird
+    const measure = () => {
+        if (!track) {
+            return;
+        }
+        loop = track.children[originals.length].offsetTop - track.children[0].offsetTop;
+        while (loop && track.scrollHeight < loop + marqueeBox.clientHeight * 1.5) {
+            originals.forEach((project) => track.append(cloneProject(project)));
+        }
+    };
+
+    const tick = (time) => {
+        const delta = last ? Math.min((time - last) / 1000, 0.1) : 0;
+        last = time;
+        if (!paused) {
+            offset += speed * delta;
+        }
+        if (loop) {
+            offset = ((offset % loop) + loop) % loop;
+        }
+        track.style.transform = `translateY(${-offset}px)`;
+        frame = requestAnimationFrame(tick);
+    };
+
+    const start = () => {
+        if (track || originals.length < 2) {
+            return;
+        }
+        track = document.createElement('div');
+        track.className = 'intro-marquee-track';
+        originals.forEach((project) => {
+            project.classList.remove('reveal', 'is-visible');
+            track.append(project);
+        });
+        originals.forEach((project) => track.append(cloneProject(project)));
+        marqueeBox.querySelector('h2').after(track);
+        marqueeBox.classList.add('is-marquee');
+        requestAnimationFrame(() => {
+            measure();
+            last = 0;
+            frame = requestAnimationFrame(tick);
+        });
+    };
+
+    const stop = () => {
+        if (!track) {
+            return;
+        }
+        cancelAnimationFrame(frame);
+        originals.forEach((project) => track.before(project));
+        track.remove();
+        track = null;
+        offset = 0;
+        marqueeBox.classList.remove('is-marquee');
+    };
+
+    marqueeBox.addEventListener('mouseenter', () => { paused = true; });
+    marqueeBox.addEventListener('mouseleave', () => { paused = false; });
+    marqueeBox.addEventListener('focusin', () => { paused = true; });
+    marqueeBox.addEventListener('focusout', () => { paused = false; });
+    marqueeBox.addEventListener('wheel', (event) => {
+        if (track) {
+            event.preventDefault();
+            offset += event.deltaY;
+        }
+    }, { passive: false });
+    // -> Bilder laden nach und ändern die Höhe: Runde neu messen
+    new ResizeObserver(measure).observe(marqueeBox);
+    window.addEventListener('load', measure);
+
+    if (marqueeDesktop.matches) {
+        start();
+    }
+    marqueeDesktop.addEventListener('change', () => (marqueeDesktop.matches ? start() : stop()));
+}
+
+// -> Seitenwechsel zu einem Projekt: nur das angeklickte Bild gleitet ins Titelbild der Projektseite.
+// Die anderen Projektbilder bekommen keinen Übergangsnamen, damit sie nicht ineinander verschwimmen.
+window.addEventListener('pageswap', (event) => {
+    document.querySelectorAll('[data-vt-project]').forEach((element) => {
+        element.style.removeProperty('view-transition-name');
+        delete element.dataset.vtProject;
+    });
+    const url = event.activation?.entry?.url;
+    if (!event.viewTransition || !url || !url.includes('/projekt/')) {
+        return;
+    }
+    // -> Im Projekt-Band der Startseite gibt es Kopien: das sichtbare angeklickte Bild nehmen
+    const link = [...document.querySelectorAll('.project-teaser-link, .project-highlight-link')].find((candidate) => {
+        const rect = candidate.getBoundingClientRect();
+        return candidate.href === url && rect.bottom > 0 && rect.top < window.innerHeight;
+    });
+    const picture = link?.querySelector('picture');
+    if (picture) {
+        picture.style.viewTransitionName = 'project-image';
+        picture.dataset.vtProject = '';
+    }
+});
+
+// -> Eigener Mauszeiger (nur mit Maus/Trackpad): kleiner Punkt, über Klickbarem ein Ring.
+// In Eingabefeldern, über Videos (YouTube) und bei offenem Kontaktfenster gilt der normale Zeiger.
+const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+if (finePointer.matches) {
+    const cursor = document.createElement('div');
+    cursor.className = 'cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+    document.body.append(cursor);
+    document.documentElement.classList.add('has-cursor');
+
+    const interactive = 'a, button, summary, label, [data-contact-open], .gallery-item, .carousel-item, [data-page="project"] [data-module="image"]';
+    const textField = 'input, textarea, select';
+    let x = 0;
+    let y = 0;
+    let frame = null;
+
+    document.addEventListener('mousemove', (event) => {
+        x = event.clientX;
+        y = event.clientY;
+        const target = event.target instanceof Element ? event.target : null;
+        cursor.classList.add('is-visible');
+        cursor.classList.toggle('is-hover', Boolean(target?.closest(interactive)));
+        cursor.classList.toggle('is-text', Boolean(target?.closest(textField)));
+        if (!frame) {
+            frame = requestAnimationFrame(() => {
+                cursor.style.transform = `translate(${x}px, ${y}px)`;
+                frame = null;
+            });
+        }
+    }, { passive: true });
+    // -> Verlässt die Maus das Fenster oder geht sie in ein Video (iframe), Punkt ausblenden
+    document.addEventListener('mouseout', (event) => {
+        if (!event.relatedTarget) {
+            cursor.classList.remove('is-visible');
+        }
+    });
+}
+
+// -> Saison: wenige kleine Schneeflocken gleiten ganz langsam über die Seite (Schalter in Globales → Saison).
+// Creme mit feinem dunklem Schimmer, damit sie auf hellen und dunklen Flächen dezent sichtbar sind.
+const snowCanvas = document.querySelector('.snow');
+
+if (snowCanvas && !reduceMotion) {
+    const context = snowCanvas.getContext('2d');
+    const styles = getComputedStyle(document.documentElement);
+    const cream = styles.getPropertyValue('--color-cream').trim() || '#fffeec';
+    let width = 0;
+    let height = 0;
+    let flakes = [];
+    let last = performance.now();
+
+    const makeFlake = (anywhere) => ({
+        x: Math.random() * width,
+        y: anywhere ? Math.random() * height : -10,
+        radius: 1 + Math.random() * 1.8,
+        speed: 8 + Math.random() * 14,
+        sway: 6 + Math.random() * 14,
+        phase: Math.random() * Math.PI * 2,
+        drift: 0.2 + Math.random() * 0.4,
+    });
+
+    const resize = () => {
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        snowCanvas.width = width * ratio;
+        snowCanvas.height = height * ratio;
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        // -> Wenige Flocken: ca. eine pro 40'000 px² Bildschirmfläche, höchstens 45
+        const count = Math.min(45, Math.round((width * height) / 40000));
+        flakes = Array.from({ length: count }, () => makeFlake(true));
+    };
+
+    const draw = (now) => {
+        const delta = Math.min(now - last, 100) / 1000;
+        last = now;
+        context.clearRect(0, 0, width, height);
+        context.fillStyle = cream;
+        context.shadowColor = 'rgba(73, 74, 69, 0.45)';
+        context.shadowBlur = 2;
+        flakes.forEach((flake, index) => {
+            flake.y += flake.speed * delta;
+            flake.phase += flake.drift * delta;
+            const x = flake.x + Math.sin(flake.phase) * flake.sway;
+            if (flake.y > height + 10) {
+                flakes[index] = makeFlake(false);
+            }
+            context.beginPath();
+            context.arc(x, flake.y, flake.radius, 0, Math.PI * 2);
+            context.fill();
+        });
+        requestAnimationFrame(draw);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    requestAnimationFrame(draw);
 }
