@@ -757,7 +757,7 @@ window.addEventListener('pageswap', (event) => {
 // -> Kontakt-Buttons: beim Darüberfahren wechselt «Kontakt» durch kurze Wörter (Globales → Kontaktformular),
 // z.B. «Kaffee?», «Telefon?», «Frage?». Alle Wörter liegen übereinander, so bleibt der Button gleich breit.
 const contactWords = (document.body.dataset.contactWords || '').split('|').filter(Boolean);
-const wordDelay = 1100;
+const wordDelay = 1600;
 
 const buildWordSwap = (element, words) => {
     const box = document.createElement('span');
@@ -775,7 +775,11 @@ const buildWordSwap = (element, words) => {
 
 // -> Zeigt Wort Nummer index (0 = Ausgangstext)
 const showWord = (spans, index) => {
-    spans.forEach((span, position) => span.classList.toggle('is-active', position === index));
+    spans.forEach((span, position) => {
+        // -> Das bisherige Wort gleitet nach oben weg, alle anderen warten unsichtbar unten
+        span.classList.toggle('is-leaving', span.classList.contains('is-active') && position !== index);
+        span.classList.toggle('is-active', position === index);
+    });
 };
 
 if (contactWords.length) {

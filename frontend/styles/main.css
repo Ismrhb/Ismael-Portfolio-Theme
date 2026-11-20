@@ -114,18 +114,24 @@ body {
         background-color: var(--color-dark);
     }
 }
-/* -> Wechselnde Wörter (Kontakt-Buttons, Porträt): alle übereinander, das aktive gleitet von unten herein */
+/* -> Wechselnde Wörter (Kontakt-Buttons, Porträt): alle übereinander; das neue Wort gleitet weich von unten
+   herein und wird scharf, das alte gleitet nach oben weg und verschwimmt dabei */
 .word-swap {
     display: inline-grid;
     justify-items: center;
     & > span {
         grid-area: 1 / 1;
         opacity: 0;
-        transform: translateY(60%);
-        transition: opacity 0.3s, transform 0.4s var(--ease);
+        filter: blur(4px);
+        transform: translateY(45%);
+        transition: opacity 0.7s var(--ease-glide), transform 0.9s var(--ease), filter 0.7s var(--ease-glide);
         &.is-active {
             opacity: 1;
+            filter: none;
             transform: none;
+        }
+        &.is-leaving {
+            transform: translateY(-45%);
         }
     }
 }
@@ -647,12 +653,15 @@ body {
             position: absolute;
             top: 50%;
             left: 50%;
+            /* -> gleiches Format wie die Kontakt-Buttons */
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
             padding: var(--space-1) var(--space-2);
             border-radius: var(--radius-s);
             background-color: var(--color-blue);
             color: var(--color-cream);
-            font: 900 var(--text-m)/1 var(--font-sans);
-            text-transform: uppercase;
+            font: normal var(--text-l)/1.1 var(--font-serif);
             white-space: nowrap;
             opacity: 0;
             transform: translate(-50%, -50%);
