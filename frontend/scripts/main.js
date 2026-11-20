@@ -754,6 +754,81 @@ window.addEventListener('pageswap', (event) => {
     }
 });
 
+// -> Kontakt-Buttons: beim Darüberfahren wechselt «Kontakt» durch kurze Wörter (Globales → Kontaktformular),
+// z.B. «Kaffee?», «Telefon?», «Frage?». Alle Wörter liegen übereinander, so bleibt der Button gleich breit.
+const contactWords = (document.body.dataset.contactWords || '').split('|').filter(Boolean);
+const wordDelay = 1100;
+
+const buildWordSwap = (element, words) => {
+    const box = document.createElement('span');
+    box.className = 'word-swap';
+    box.setAttribute('aria-hidden', 'true');
+    box.append(...words.map((word, index) => {
+        const span = document.createElement('span');
+        span.textContent = word;
+        span.classList.toggle('is-active', index === 0);
+        return span;
+    }));
+    element.replaceChildren(box);
+    return [...box.children];
+};
+
+// -> Zeigt Wort Nummer index (0 = Ausgangstext)
+const showWord = (spans, index) => {
+    spans.forEach((span, position) => span.classList.toggle('is-active', position === index));
+};
+
+if (contactWords.length) {
+    // -> Buttons: nur mit Maus; der Ausgangstext bleibt als Name für Screenreader
+    if (window.matchMedia('(hover: hover)').matches) {
+        document.querySelectorAll('.button-contact[data-contact-open]').forEach((button) => {
+            const label = button.textContent.trim();
+            button.setAttribute('aria-label', label);
+            const spans = buildWordSwap(button, [label, ...contactWords]);
+            let timer = null;
+            let index = 0;
+            button.addEventListener('mouseenter', () => {
+                index = 1;
+                showWord(spans, index);
+                timer = setInterval(() => {
+                    index = index % contactWords.length + 1;
+                    showWord(spans, index);
+                }, wordDelay);
+            });
+            button.addEventListener('mouseleave', () => {
+                clearInterval(timer);
+                showWord(spans, 0);
+            });
+        });
+    }
+
+    // -> Porträt auf der Startseite: Wörter wechseln beim Darüberfahren, auf dem Handy (Hinweis immer sichtbar) von selbst
+    const portrait = document.querySelector('[data-module="intro"] .intro-portrait');
+    const portraitLabel = portrait?.querySelector('.intro-portrait-hover');
+    if (portraitLabel && contactWords.length > 1) {
+        const spans = buildWordSwap(portraitLabel, contactWords);
+        let timer = null;
+        let index = 0;
+        const start = (delay) => {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                index = (index + 1) % contactWords.length;
+                showWord(spans, index);
+            }, delay);
+        };
+        if (window.matchMedia('(hover: hover)').matches) {
+            portrait.addEventListener('mouseenter', () => start(wordDelay));
+            portrait.addEventListener('mouseleave', () => {
+                clearInterval(timer);
+                index = 0;
+                showWord(spans, 0);
+            });
+        } else if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            start(wordDelay * 2);
+        }
+    }
+}
+
 // -> Eigener Mauszeiger (nur mit Maus/Trackpad): kleiner Punkt, über Klickbarem ein Ring.
 // In Eingabefeldern, über Videos (YouTube) und bei offenem Kontaktfenster gilt der normale Zeiger.
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');

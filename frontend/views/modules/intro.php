@@ -22,7 +22,8 @@ $data = $args['data'];
                     'sizes' => '(max-width: 768px) 100vw, 40vw',
                     'eager' => true,
                 ]) ?>
-                <span class="intro-portrait-hover" aria-hidden="true"><?= esc_html($data['portrait_hover']) ?></span>
+                <?php // -> Erstes der wechselnden Wörter (Globales), sonst der feste Text; main.js lässt die Wörter wechseln ?>
+                <span class="intro-portrait-hover" aria-hidden="true"><?= esc_html(get_globals_form()['words'][0] ?? $data['portrait_hover']) ?></span>
             </button>
             <?php // -> Mobil: Button auf dem Portrait führt zu den Projekten darunter ?>
             <a class="intro-portrait-projects" href="#projekte">Projekte</a>

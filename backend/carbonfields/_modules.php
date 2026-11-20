@@ -91,8 +91,9 @@ Container::make('post_meta', 'Module')
                 Field::make('image', 'portrait', 'Porträt')->set_required()->set_width(33),
                 Field::make('image', 'portrait_mobile', 'Porträt (Mobile)')
                     ->set_help_text('Optional')->set_width(33),
-                Field::make('text', 'portrait_hover', 'Text beim Hovern über das Porträt')
-                    ->set_default_value('Let’s talk')->set_width(33),
+                Field::make('text', 'portrait_hover', 'Text auf dem Porträt')
+                    ->set_default_value('Let’s talk')->set_width(33)
+                    ->set_help_text('Nur sichtbar, wenn unter Globales → Kontaktformular keine wechselnden Wörter eingetragen sind.'),
                 Field::make('association', 'projects', 'Projekte')
                     ->set_types([['type' => 'post', 'post_type' => 'project']])
                     ->set_help_text('Reihenfolge per Drag & Drop festlegen.'),

@@ -22,5 +22,6 @@
     <title><?= esc_html(get_document_title_text()) ?></title>
     <?php wp_head(); ?>
 </head>
-<body>
+<?php // -> Wechselnde Wörter für die Kontakt-Buttons (main.js) ?>
+<body data-contact-words="<?= esc_attr(implode('|', get_globals_form()['words'])) ?>">
 <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>

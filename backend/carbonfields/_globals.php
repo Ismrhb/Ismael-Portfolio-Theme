@@ -24,6 +24,9 @@ Container::make('theme_options', 'Globales')
         Field::make('text', 'form_sender', 'Absender-Adresse (E-Mail)')
             ->set_help_text('Von dieser Adresse werden die Anfragen verschickt. Sie muss beim Hosting als Postfach existieren, sonst wird die E-Mail oft blockiert.'),
         Field::make('text', 'form_title', 'Titel')->set_default_value('Let’s talk'),
+        Field::make('text', 'contact_words', 'Wechselnde Wörter auf den Kontakt-Buttons')
+            ->set_default_value('Kaffee?, Telefon?, Frage?')
+            ->set_help_text('Mit Komma trennen. Beim Darüberfahren wechselt «Kontakt» durch diese Wörter; auf dem Porträt der Startseite stehen sie anstelle eines festen Textes. Leer lassen = kein Wechsel.'),
         Field::make('text', 'form_note', 'Satz über dem Senden-Button')
             ->set_default_value('Ich freue mich, von dir zu hören, und melde mich innerhalb der nächsten 48 Stunden bei dir.')
             ->set_help_text('Sagt, was nach dem Absenden passiert. Leer lassen, um ihn auszublenden.'),

@@ -45,6 +45,8 @@ function get_globals_form(): array
         'title' => carbon_get_theme_option('form_title') ?: 'Let’s talk',
         'success' => carbon_get_theme_option('form_success') ?: 'Danke für deine Nachricht!',
         'note' => carbon_get_theme_option('form_note'),
+        // -> Wörter für die Kontakt-Buttons, z.B. «Kaffee?, Telefon?, Frage?»
+        'words' => array_values(array_filter(array_map('trim', explode(',', (string) carbon_get_theme_option('contact_words'))))),
         'recipient' => carbon_get_theme_option('form_recipient') ?: get_option('admin_email'),
         'sender' => carbon_get_theme_option('form_sender'),
         'occasions' => ['Event', 'Portrait', 'Hochzeit', 'Anderes'],
