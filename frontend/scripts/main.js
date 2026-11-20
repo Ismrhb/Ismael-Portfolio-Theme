@@ -39,6 +39,10 @@ if (contactDialog) {
             occasionField.value = button.dataset.occasion;
         }
         contactDialog.showModal();
+        // -> Mit Maus/Finger geöffnet: kein Fokus-Rahmen um das Kreuz (mit der Tastatur bleibt er für die Orientierung)
+        if (event.detail > 0) {
+            document.activeElement?.blur();
+        }
         document.documentElement.classList.add('is-locked');
     });
     contactDialog.addEventListener('close', () => {

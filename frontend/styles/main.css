@@ -405,6 +405,16 @@ body {
             outline-offset: 2px;
         }
     }
+    /* -> iPhone: Datumsfeld sonst breiter und höher als die anderen Felder */
+    & input[type="date"] {
+        display: block;
+        min-width: 0;
+        -webkit-appearance: none;
+        appearance: none;
+        &::-webkit-date-and-time-value {
+            text-align: left;
+        }
+    }
     & select option {
         background-color: var(--color-dark);
         color: var(--color-cream);
