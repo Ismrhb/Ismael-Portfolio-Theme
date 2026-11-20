@@ -134,6 +134,10 @@ body {
             transform: translateY(-45%);
         }
     }
+    /* -> linksbündig (Formular-Titel) */
+    &.is-start {
+        justify-items: start;
+    }
 }
 .link-arrow {
     display: inline-flex;

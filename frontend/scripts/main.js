@@ -831,6 +831,34 @@ if (contactWords.length) {
             start(wordDelay * 2);
         }
     }
+
+    // -> Titel des Kontaktformulars (Fenster und Baustein): Wörter wechseln von selbst, solange er sichtbar ist.
+    // Der ursprüngliche Titel (z.B. «Let’s talk») bleibt für Screenreader erhalten.
+    if (contactWords.length > 1 && !reduceMotion) {
+        document.querySelectorAll('.contact-title').forEach((title) => {
+            const label = title.textContent.trim();
+            const spans = buildWordSwap(title, contactWords);
+            const hidden = document.createElement('span');
+            hidden.className = 'visually-hidden';
+            hidden.textContent = label;
+            title.prepend(hidden);
+            title.querySelector('.word-swap').classList.add('is-start');
+            let timer = null;
+            let index = 0;
+            new IntersectionObserver(([entry]) => {
+                clearInterval(timer);
+                if (!entry.isIntersecting) {
+                    index = 0;
+                    showWord(spans, 0);
+                    return;
+                }
+                timer = setInterval(() => {
+                    index = (index + 1) % contactWords.length;
+                    showWord(spans, index);
+                }, wordDelay * 1.5);
+            }).observe(title);
+        });
+    }
 }
 
 // -> Eigener Mauszeiger (nur mit Maus/Trackpad): kleiner Punkt, über Klickbarem ein Ring.
