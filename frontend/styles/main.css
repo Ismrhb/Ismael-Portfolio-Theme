@@ -665,7 +665,11 @@ body {
             white-space: nowrap;
             opacity: 0;
             transform: translate(-50%, -50%);
-            transition: opacity 0.4s;
+            transition: opacity 0.4s, background-color 0.25s;
+            /* -> wie die Kontakt-Buttons: dunkel, sobald die Maus direkt darauf ist */
+            &:hover {
+                background-color: var(--color-dark);
+            }
         }
         &:hover,
         &:focus-visible {
