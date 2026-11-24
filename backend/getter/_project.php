@@ -108,9 +108,8 @@ function get_project_cta(): array|false
         return false;
     }
     return [
+        // -> Ohne Link zur Projekte-Übersicht, darunter folgen ohnehin die anderen Projekte
         'title' => 'Lust auf ein gemeinsames Projekt?',
-        'collection_url' => get_collection_url(),
-        'collection_label' => 'oder weitere Projekte ansehen',
     ];
 }
 

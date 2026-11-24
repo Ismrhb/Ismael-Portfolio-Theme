@@ -377,7 +377,9 @@ function render_modules (): void {
                 $module['categories'] = get_used_project_categories();
                 break;
             case 'cta':
-                $module['collection_url'] = $module['show_collection'] ? get_collection_url() : '';
+                // -> Kein Link, wenn darunter ohnehin die Projekte folgen (Projektseiten, Angebot)
+                $has_projects_band = is_singular('project') || page_has_module('offers');
+                $module['collection_url'] = $module['show_collection'] && !$has_projects_band ? get_collection_url() : '';
                 break;
             case 'offer_intro':
                 $module['images'] = array_values(array_filter(array_map(fn ($id) => get_media_by_id($id, 'l'), array_slice($module['images'] ?? [], 0, 3))));
