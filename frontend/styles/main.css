@@ -766,7 +766,7 @@ body {
 }
 
 /* -> Bildausschnitt des Titelbilds (Feld «Bildausschnitt» im Projekt), überall wo es zugeschnitten wird */
-:is(.project-teaser, .project-highlight, .more-project, [data-module="title"]) :is(img, video) {
+:is(.project-teaser, .project-highlight, .more-project) :is(img, video) {
     object-position: var(--focus, 50% 50%);
 }
 
@@ -1806,10 +1806,9 @@ main :is(p, li, .faq-answer):not(.subtitle, .cta-title, .kicker, .section-subtit
     }
 }
 
-/* -> Nur mobil sichtbare Elemente (Abschluss am Seitenende, Button "Alle Projekte", Titelbild der Projektseite) */
+/* -> Nur mobil sichtbare Elemente (Abschluss am Seitenende, Button "Alle Projekte") */
 .page-cta,
-.intro-all-projects,
-[data-module="title"] .title-image {
+.intro-all-projects {
     display: none;
 }
 
@@ -1950,10 +1949,6 @@ html:active-view-transition-type(seitenwechsel) {
     }
     &::view-transition-new(root) {
         animation: page-in 0.45s var(--ease) both;
-    }
-    &::view-transition-group(project-image) {
-        animation-duration: 0.5s;
-        animation-timing-function: var(--ease);
     }
 }
 @keyframes page-out {
@@ -2737,17 +2732,8 @@ main.is-404 p.lead {
         max-height: 60svh;
     }
 
-    /* -> Projektseite mobil: Label, Titel, Titelbild, kurze Einleitung */
+    /* -> Projektseite mobil: kürzere Einleitung */
     [data-module="title"] {
-        & .title-image {
-            display: block;
-            width: 100%;
-            margin-top: var(--space-3);
-            aspect-ratio: 4 / 5;
-            object-fit: cover;
-            border-radius: var(--radius-l);
-            box-shadow: var(--shadow);
-        }
         & .lead {
             font-size: var(--text-m);
         }

@@ -750,29 +750,6 @@ if (marqueeBox && !reduceMotion) {
     marqueeDesktop.addEventListener('change', () => (marqueeDesktop.matches ? start() : stop()));
 }
 
-// -> Seitenwechsel zu einem Projekt: nur das angeklickte Bild gleitet ins Titelbild der Projektseite.
-// Die anderen Projektbilder bekommen keinen Übergangsnamen, damit sie nicht ineinander verschwimmen.
-window.addEventListener('pageswap', (event) => {
-    document.querySelectorAll('[data-vt-project]').forEach((element) => {
-        element.style.removeProperty('view-transition-name');
-        delete element.dataset.vtProject;
-    });
-    const url = event.activation?.entry?.url;
-    if (!event.viewTransition || !url || !url.includes('/projekt/')) {
-        return;
-    }
-    // -> Im Projekt-Band der Startseite gibt es Kopien: das sichtbare angeklickte Bild nehmen
-    const link = [...document.querySelectorAll('.project-teaser-link, .project-highlight-link')].find((candidate) => {
-        const rect = candidate.getBoundingClientRect();
-        return candidate.href === url && rect.bottom > 0 && rect.top < window.innerHeight;
-    });
-    const picture = link?.querySelector('picture');
-    if (picture) {
-        picture.style.viewTransitionName = 'project-image';
-        picture.dataset.vtProject = '';
-    }
-});
-
 // -> Kontakt-Buttons: beim Darüberfahren wechselt «Kontakt» durch kurze Wörter (Globales → Kontaktformular),
 // z.B. «Kaffee?», «Telefon?», «Frage?». Alle Wörter liegen übereinander, so bleibt der Button gleich breit.
 const contactWords = (document.body.dataset.contactWords || '').split('|').filter(Boolean);

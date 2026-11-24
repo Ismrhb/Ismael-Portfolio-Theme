@@ -2,7 +2,7 @@
 $data = $args['data'];
 $has_intro = !empty($data['subtitle']) || !empty($data['lead']) || !empty($data['facts']);
 ?>
-<section data-module="title"<?= !empty($data['focus']) ? ' style="--focus: ' . esc_attr($data['focus']) . '"' : '' ?>>
+<section data-module="title">
     <h1 class="title"><?= esc_html($data['title']) ?></h1>
     <?php if ($data['categories']) : ?>
         <ul class="tags">
@@ -11,13 +11,6 @@ $has_intro = !empty($data['subtitle']) || !empty($data['lead']) || !empty($data[
             <?php endforeach; ?>
         </ul>
     <?php endif; ?>
-    <?php get_template_part('frontend/views/partials/image', null, [
-        'image' => $data['image'] ?? false,
-        'class' => 'title-image',
-        'transition' => 'project-image',
-        'sizes' => '100vw',
-        'eager' => true,
-    ]) ?>
     <?php if ($has_intro) : ?>
         <?php // -> Untertitel und Einleitung links, Stammdaten rechts (Projekte) ?>
         <div class="title-intro <?= !empty($data['facts']) ? 'has-facts' : '' ?>">

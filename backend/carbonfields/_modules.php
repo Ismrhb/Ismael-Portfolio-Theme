@@ -294,11 +294,6 @@ function render_modules (): void {
             case 'title':
                 $module['title'] = $module['title'] ?: get_the_title();
                 $module['categories'] = get_post_type() === 'project' ? get_project_categories(get_the_ID()) : [];
-                // -> Projekte: Bild der Startseite (sonst Titelbild) wird mobil zwischen Titel und Einleitung gezeigt
-                $module['image'] = get_post_type() === 'project'
-                    ? get_media_by_id(carbon_get_post_meta(get_the_ID(), 'highlight_image'), 'l')
-                    : false;
-                $module['focus'] = get_post_type() === 'project' ? get_project_focus(get_the_ID()) : '';
                 $module['facts'] = get_post_type() === 'project' ? get_project_facts(get_the_ID()) : [];
                 $facts_shown = $facts_shown || !empty($module['facts']);
                 break;
