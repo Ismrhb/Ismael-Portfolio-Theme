@@ -78,7 +78,7 @@ function get_project_teaser_by_id(int $id): array
         'teaser_image' => get_responsive_media($highlight_image, 0, 'l'),
         'highlight_image' => get_media_by_id($highlight_image, 'l'),
         'highlight_text' => carbon_get_post_meta($id, 'highlight_text'),
-        // -> Format auf der Startseite: portrait (hoch), landscape (quer) oder leer (Desktop quer, Handy hoch)
+        // -> Format in der Projekte-Übersicht: portrait (hoch), landscape (quer) oder leer (flexibel)
         'highlight_format' => carbon_get_post_meta($id, 'highlight_format') ?: '',
         'focus' => get_project_focus($id),
         // -> Bildbeschreibung aus der Mediathek, sonst der Projekttitel

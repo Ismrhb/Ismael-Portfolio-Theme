@@ -26,7 +26,7 @@ Container::make('post_meta', 'Vorschau')
                 'portrait' => 'Hochformat',
                 'landscape' => 'Querformat',
             ])
-            ->set_help_text('Gilt für die Startseite und die Projekte-Übersicht. Flexibel = das Raster entscheidet.'),
+            ->set_help_text('Gilt nur für die Projekte-Übersicht (Hochformat = schmales, hohes Feld; Querformat = breites Feld). Flexibel = das Raster entscheidet. Auf der Startseite haben alle Bilder dasselbe Format.'),
     ]);
 
 // -> Stammdaten des Projekts, werden neben der Einleitung (Baustein "Titel & Einleitung") angezeigt
