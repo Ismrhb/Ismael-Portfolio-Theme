@@ -20,6 +20,19 @@ Container::make('post_meta', 'Vorschau')
             ])
             ->set_help_text('Die Anordnung wird bei jedem Besuch neu gemischt. Die Priorität bestimmt, wer in seiner Reihe breiter wird.'),
         Field::make('textarea', 'highlight_text', 'Kurzbeschreibung Startseite')->set_rows(4),
+        Field::make('select', 'highlight_focus', 'Bildausschnitt')
+            ->set_options([
+                '' => 'Mitte',
+                'top' => 'Oben (z.B. damit der Kopf sichtbar ist)',
+                'bottom' => 'Unten',
+                'left' => 'Links',
+                'right' => 'Rechts',
+                'top-left' => 'Oben links',
+                'top-right' => 'Oben rechts',
+                'bottom-left' => 'Unten links',
+                'bottom-right' => 'Unten rechts',
+            ])
+            ->set_help_text('Welcher Teil des Titelbilds sichtbar bleibt, wenn es zugeschnitten wird (Startseite, Projekte-Übersicht, «Andere Projekte», Handy).'),
         Field::make('select', 'highlight_format', 'Bildformat auf der Startseite')
             ->set_options([
                 '' => 'Egal (Computer quer, Handy hoch)',

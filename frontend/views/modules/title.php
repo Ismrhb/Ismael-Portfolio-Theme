@@ -2,7 +2,7 @@
 $data = $args['data'];
 $has_intro = !empty($data['subtitle']) || !empty($data['lead']) || !empty($data['facts']);
 ?>
-<section data-module="title">
+<section data-module="title"<?= !empty($data['focus']) ? ' style="--focus: ' . esc_attr($data['focus']) . '"' : '' ?>>
     <h1 class="title"><?= esc_html($data['title']) ?></h1>
     <?php if ($data['categories']) : ?>
         <ul class="tags">

@@ -8,7 +8,7 @@ $media = $project['highlight_image'] ? [
 ] : false;
 ?>
 <?php // -> Gewähltes Bildformat (Hoch/Quer), sonst das Standardformat ?>
-<article class="project-highlight<?= $project['highlight_format'] ? ' is-' . esc_attr($project['highlight_format']) : '' ?>">
+<article class="project-highlight<?= $project['highlight_format'] ? ' is-' . esc_attr($project['highlight_format']) : '' ?>" style="--focus: <?= esc_attr($project['focus']) ?>">
     <a class="project-highlight-link" href="<?= esc_url($project['url']) ?>">
         <div class="project-highlight-media">
             <?php get_template_part('frontend/views/partials/picture', null, [

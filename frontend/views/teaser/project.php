@@ -3,7 +3,7 @@
 $project = $args['project'];
 $slugs = implode(' ', array_column($project['categories'], 'slug'));
 ?>
-<article class="project-teaser" data-priority="<?= esc_attr($project['priority']) ?>" data-categories="<?= esc_attr($slugs) ?>" data-id="<?= (int) $project['id'] ?>">
+<article class="project-teaser" data-priority="<?= esc_attr($project['priority']) ?>" data-categories="<?= esc_attr($slugs) ?>" data-id="<?= (int) $project['id'] ?>" style="--focus: <?= esc_attr($project['focus']) ?>">
     <a class="project-teaser-link" href="<?= esc_url($project['url']) ?>">
         <?php get_template_part('frontend/views/partials/picture', null, [
             'media' => $project['teaser_image'],

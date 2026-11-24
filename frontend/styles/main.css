@@ -765,6 +765,11 @@ body {
     }
 }
 
+/* -> Bildausschnitt des Titelbilds (Feld «Bildausschnitt» im Projekt), überall wo es zugeschnitten wird */
+:is(.project-teaser, .project-highlight, .more-project, [data-module="title"]) :is(img, video) {
+    object-position: var(--focus, 50% 50%);
+}
+
 /* -> Titelvideo liegt genau über dem Titelbild (das Titelbild dient als Vorschau) */
 .teaser-video {
     position: absolute;

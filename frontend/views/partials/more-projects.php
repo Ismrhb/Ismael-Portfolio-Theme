@@ -9,7 +9,7 @@ if (empty($args['projects'])) {
     <h2 class="more-projects-title"><?= esc_html($args['title']) ?></h2>
     <div class="more-projects-track" tabindex="0">
         <?php foreach ($args['projects'] as $project) : ?>
-            <a class="more-project" href="<?= esc_url($project['url']) ?>">
+            <a class="more-project" href="<?= esc_url($project['url']) ?>" style="--focus: <?= esc_attr($project['focus']) ?>">
                 <?php get_template_part('frontend/views/partials/picture', null, [
                     'media' => $project['teaser_image'],
                     'alt' => $project['alt'],

@@ -48,6 +48,16 @@ function get_project_facts(int $id): array
     return array_filter($facts);
 }
 
+// -> Bildausschnitt des Titelbilds als CSS-Wert für object-position (Feld «Bildausschnitt»)
+function get_project_focus(int $id): string
+{
+    $positions = [
+        'top' => '50% 0%', 'bottom' => '50% 100%', 'left' => '0% 50%', 'right' => '100% 50%',
+        'top-left' => '0% 0%', 'top-right' => '100% 0%', 'bottom-left' => '0% 100%', 'bottom-right' => '100% 100%',
+    ];
+    return $positions[carbon_get_post_meta($id, 'highlight_focus')] ?? '50% 50%';
+}
+
 // -> Daten eines Projekts für die Projekte-Übersicht und die Startseite
 function get_project_teaser_by_id(int $id): array
 {
@@ -65,6 +75,7 @@ function get_project_teaser_by_id(int $id): array
         'highlight_text' => carbon_get_post_meta($id, 'highlight_text'),
         // -> Format auf der Startseite: portrait (hoch), landscape (quer) oder leer (Desktop quer, Handy hoch)
         'highlight_format' => carbon_get_post_meta($id, 'highlight_format') ?: '',
+        'focus' => get_project_focus($id),
         // -> Bildbeschreibung aus der Mediathek, sonst der Projekttitel
         'alt' => get_post_meta((int) $highlight_image, '_wp_attachment_image_alt', true) ?: get_the_title($id),
         // -> Optionales Titelvideo (läuft stumm in Schlaufe), Titelbild dient als Vorschau
