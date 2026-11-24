@@ -262,6 +262,19 @@ function render_modules (): void {
             case 'intro':
                 $module['portrait'] = get_responsive_media($module['portrait'], $module['portrait_mobile'], 'm');
                 $module['collection_url'] = get_collection_url();
+                // -> Direkt zu den Foto- oder Videoprojekten (Projekte-Übersicht mit gesetztem Filter), nur wenn es solche gibt
+                $module['category_links'] = [];
+                if ($module['collection_url']) {
+                    $used = array_column(get_used_project_categories(), 'slug');
+                    foreach (['foto' => 'Fotos', 'video' => 'Videos'] as $slug => $label) {
+                        if (in_array($slug, $used, true)) {
+                            $module['category_links'][] = [
+                                'label' => $label,
+                                'url' => add_query_arg('kategorie', $slug, $module['collection_url']),
+                            ];
+                        }
+                    }
+                }
                 $module['projects'] = array_map(
                     fn ($project) => get_project_teaser_by_id($project['id']),
                     $module['projects']

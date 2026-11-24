@@ -14,6 +14,15 @@ $data = $args['data'];
                 <p class="intro-tagline"><?= esc_html($data['tagline']) ?></p>
             <?php endif; ?>
         </div>
+        <?php if (!empty($data['category_links'])) : ?>
+            <?php // -> Direkt zu Fotos oder Videos, über dem Porträt ?>
+            <nav class="intro-categories" aria-label="Projekte nach Art">
+                <?php foreach ($data['category_links'] as $index => $link) : ?>
+                    <?php if ($index > 0) : ?><span aria-hidden="true">·</span><?php endif; ?>
+                    <a href="<?= esc_url($link['url']) ?>"><?= esc_html($link['label']) ?></a>
+                <?php endforeach; ?>
+            </nav>
+        <?php endif; ?>
         <div class="intro-portrait-wrap">
             <button class="intro-portrait" type="button" data-contact-open aria-label="Kontaktformular öffnen">
                 <?php get_template_part('frontend/views/partials/picture', null, [
@@ -25,13 +34,7 @@ $data = $args['data'];
                 <?php // -> Erstes der wechselnden Wörter (Globales), sonst der feste Text; main.js lässt die Wörter wechseln ?>
                 <span class="intro-portrait-hover" aria-hidden="true"><?= esc_html(get_globals_form()['words'][0] ?? $data['portrait_hover']) ?></span>
             </button>
-            <?php // -> Mobil: Button auf dem Portrait führt zu den Projekten darunter ?>
-            <a class="intro-portrait-projects" href="#projekte">Projekte</a>
         </div>
-        <?php if ($data['collection_url']) : ?>
-            <?php // -> Desktop: Link zur Projekte-Übersicht unter dem Portrait, weil das Projekt-Band rechts kein Ende hat ?>
-            <a class="text-link intro-aside-link" href="<?= esc_url($data['collection_url']) ?>">Alle Projekte ansehen</a>
-        <?php endif; ?>
     </div>
     <div class="intro-projects" id="projekte">
         <h2 class="visually-hidden">Ausgewählte Projekte</h2>

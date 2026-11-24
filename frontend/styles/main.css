@@ -764,9 +764,6 @@ body {
         will-change: transform;
     }
 }
-.intro-aside-link {
-    align-self: center;
-}
 
 /* -> Titelvideo liegt genau über dem Titelbild (das Titelbild dient als Vorschau) */
 .teaser-video {
@@ -797,12 +794,26 @@ body {
     }
 }
 
-/* -> Projekte-Button auf dem Portrait gibt es nur mobil */
 .intro-portrait-wrap {
     width: 100%;
 }
-.intro-portrait-projects {
-    display: none;
+/* -> «Fotos · Videos» über dem Porträt, nah am Bild (die Abstände in der Spalte sind sonst grösser) */
+.intro-categories {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: calc(var(--space-1) - var(--space-5));
+    font: var(--font-button);
+    & a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        transition: color 0.25s;
+        &:hover {
+            color: var(--color-blue);
+        }
+    }
 }
 
 /* -> Touch-Geräte kennen kein Hovern: Hinweis "Let’s talk" immer zeigen */
@@ -2660,28 +2671,6 @@ main.is-404 p.lead {
             }
             & .intro-portrait-hover {
                 display: none;
-            }
-        }
-        & .intro-aside-link {
-            display: none;
-        }
-        & .intro-portrait-projects {
-            position: absolute;
-            left: 50%;
-            bottom: var(--space-2);
-            display: flex;
-            align-items: center;
-            min-height: 44px;
-            padding: var(--space-1) var(--space-3);
-            border-radius: var(--radius-s);
-            background-color: var(--color-blue);
-            color: var(--color-cream);
-            font: 900 var(--text-s)/1 var(--font-sans);
-            text-transform: uppercase;
-            transform: translateX(-50%);
-            transition: transform 0.15s;
-            &:active {
-                transform: translateX(-50%) scale(0.97);
             }
         }
         & .intro-projects {
