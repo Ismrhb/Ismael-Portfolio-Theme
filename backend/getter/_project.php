@@ -63,6 +63,8 @@ function get_project_teaser_by_id(int $id): array
         'teaser_image' => get_responsive_media($highlight_image, 0, 'l'),
         'highlight_image' => get_media_by_id($highlight_image, 'l'),
         'highlight_text' => carbon_get_post_meta($id, 'highlight_text'),
+        // -> Format auf der Startseite: portrait (hoch), landscape (quer) oder leer (Desktop quer, Handy hoch)
+        'highlight_format' => carbon_get_post_meta($id, 'highlight_format') ?: '',
         // -> Bildbeschreibung aus der Mediathek, sonst der Projekttitel
         'alt' => get_post_meta((int) $highlight_image, '_wp_attachment_image_alt', true) ?: get_the_title($id),
         // -> Optionales Titelvideo (läuft stumm in Schlaufe), Titelbild dient als Vorschau
@@ -83,20 +85,16 @@ function get_projects(): array
     return array_map('get_project_teaser_by_id', $ids);
 }
 
-// -> Kontaktformular unter jedem Projekt (Daten wie beim Baustein «Kontaktformular»); false, wenn das Projekt den Baustein selbst hat
-function get_project_contact_module(): array|false
+// -> Abschluss «Lust auf ein gemeinsames Projekt?» unter jedem Projekt; false, wenn das Projekt selbst einen Abschluss oder ein Kontaktformular hat
+function get_project_cta(): array|false
 {
-    if (page_has_module('contact')) {
+    if (page_has_module('cta') || page_has_module('contact')) {
         return false;
     }
-    $image = get_media_by_id(get_globals_form()['project_image'], 'l');
     return [
-        'mobile_only' => false,
-        'image' => $image,
-        'image_text' => '',
-        'kicker' => '',
-        'submit' => 'Senden',
-        'phone' => get_globals_contact(),
+        'title' => 'Lust auf ein gemeinsames Projekt?',
+        'collection_url' => get_collection_url(),
+        'collection_label' => 'oder weitere Projekte ansehen',
     ];
 }
 

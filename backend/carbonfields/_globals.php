@@ -30,8 +30,6 @@ Container::make('theme_options', 'Globales')
         Field::make('text', 'form_note', 'Satz über dem Senden-Button')
             ->set_default_value('Ich freue mich, von dir zu hören, und melde mich innerhalb der nächsten 48 Stunden bei dir.')
             ->set_help_text('Sagt, was nach dem Absenden passiert. Leer lassen, um ihn auszublenden.'),
-        Field::make('image', 'form_project_image', 'Bild neben dem Formular auf Projektseiten')
-            ->set_help_text('Unter jedem Projekt steht automatisch das Kontaktformular (ausser das Projekt hat den Baustein «Kontaktformular» selbst). Optional ein Bild daneben, z.B. dein Porträt; nur auf dem Desktop sichtbar.'),
         Field::make('text', 'form_success', 'Erfolgsmeldung')
             ->set_default_value('Danke für deine Nachricht! Ich melde mich so schnell wie möglich.'),
     ])

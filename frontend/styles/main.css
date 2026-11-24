@@ -856,6 +856,19 @@ body {
         object-fit: cover;
         transition: transform 0.6s var(--ease);
     }
+    /* -> Bildformat pro Projekt (Feld «Bildformat auf der Startseite»), auf allen Bildschirmgrössen */
+    &.is-portrait .project-highlight-image img {
+        aspect-ratio: 4 / 5;
+    }
+    &.is-landscape .project-highlight-image img {
+        aspect-ratio: 3 / 2;
+    }
+    /* -> Hochformat auf dem Computer schmaler, sonst wird das Bild riesig */
+    @media (min-width: 769px) {
+        &.is-portrait .project-highlight-media {
+            max-width: 60%;
+        }
+    }
     & .project-highlight-title {
         margin-top: var(--space-2);
         font: var(--font-h2);

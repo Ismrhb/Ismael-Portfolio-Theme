@@ -3,7 +3,6 @@ use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
 // -> Titelbild und Texte, die in der Projekte-Übersicht und auf der Startseite verwendet werden
-// Das Titelbild ist im Feld highlight_image gespeichert; ältere Projekte haben evtl. noch ein teaser_image (wird als Ersatz verwendet).
 Container::make('post_meta', 'Vorschau')
     ->where('post_type', '=', 'project')
     ->set_context('side')
@@ -21,6 +20,13 @@ Container::make('post_meta', 'Vorschau')
             ])
             ->set_help_text('Die Anordnung wird bei jedem Besuch neu gemischt. Die Priorität bestimmt, wer in seiner Reihe breiter wird.'),
         Field::make('textarea', 'highlight_text', 'Kurzbeschreibung Startseite')->set_rows(4),
+        Field::make('select', 'highlight_format', 'Bildformat auf der Startseite')
+            ->set_options([
+                '' => 'Egal (Computer quer, Handy hoch)',
+                'portrait' => 'Hochformat',
+                'landscape' => 'Querformat',
+            ])
+            ->set_help_text('Hochformat z.B. für Portraits, Querformat für Landschaften oder Videos.'),
     ]);
 
 // -> Stammdaten des Projekts, werden neben der Einleitung (Baustein "Titel & Einleitung") angezeigt
