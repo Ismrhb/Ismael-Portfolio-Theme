@@ -48,14 +48,19 @@ function get_project_facts(int $id): array
     return array_filter($facts);
 }
 
-// -> Bildausschnitt des Titelbilds als CSS-Wert für object-position (Feld «Bildausschnitt»)
+// -> Bildausschnitt des Titelbilds als CSS-Wert für object-position (im Projekt auf dem Bild angeklickt, Kasten «Bildausschnitt»)
 function get_project_focus(int $id): string
 {
+    $point = get_post_meta($id, '_highlight_focus_point', true);
+    if (preg_match('/^(\d{1,3}) (\d{1,3})$/', (string) $point, $match)) {
+        return min(100, (int) $match[1]) . '% ' . min(100, (int) $match[2]) . '%';
+    }
+    // -> Früher als Auswahl gespeichert (Oben, Unten …)
     $positions = [
         'top' => '50% 0%', 'bottom' => '50% 100%', 'left' => '0% 50%', 'right' => '100% 50%',
         'top-left' => '0% 0%', 'top-right' => '100% 0%', 'bottom-left' => '0% 100%', 'bottom-right' => '100% 100%',
     ];
-    return $positions[carbon_get_post_meta($id, 'highlight_focus')] ?? '50% 50%';
+    return $positions[get_post_meta($id, '_highlight_focus', true)] ?? '50% 50%';
 }
 
 // -> Daten eines Projekts für die Projekte-Übersicht und die Startseite

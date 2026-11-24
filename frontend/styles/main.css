@@ -2555,6 +2555,10 @@ main.is-404 p.lead {
                 aspect-ratio: 4 / 5;
             }
         }
+        /* -> Querformat (Feld «Bildformat») auch auf dem Handy quer */
+        &[data-format="landscape"] .project-teaser-image img {
+            aspect-ratio: 3 / 2;
+        }
         & .project-teaser-link:active .project-teaser-image {
             transform: scale(0.98);
         }

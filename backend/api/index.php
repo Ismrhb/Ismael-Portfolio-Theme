@@ -13,7 +13,7 @@
 
 // -> Felder, die über die Schnittstelle gelesen und geschrieben werden dürfen
 const API_POST_META = [
-    'highlight_image', 'highlight_format', 'highlight_focus', 'teaser_video', 'teaser_size', 'highlight_text',
+    'highlight_image', 'highlight_format', 'teaser_video', 'teaser_size', 'highlight_text',
     'fact_date', 'fact_client', 'fact_service', 'fact_effort', 'fact_inspiration',
     'seo_description', 'seo_image',
 ];

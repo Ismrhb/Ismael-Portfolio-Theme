@@ -162,7 +162,7 @@ document.querySelectorAll('[data-contact-form]').forEach((form) => {
 // -> Projekte-Übersicht: bei jedem Besuch neu gemischtes Raster mit Reihen aus 2, 3 oder 4 Projekten
 // Das Raster hat 12 Spalten; jedes Muster beschreibt die Breiten einer Reihe.
 const rowPatterns = {
-    2: [[8, 4], [4, 8], [6, 6], [7, 5], [5, 7]],
+    2: [[8, 4], [4, 8], [6, 6], [7, 5], [5, 7], [9, 3], [3, 9]],
     3: [[4, 4, 4], [6, 3, 3], [3, 6, 3], [3, 3, 6], [5, 4, 3], [3, 4, 5]],
     4: [[3, 3, 3, 3]],
 };
@@ -201,12 +201,27 @@ const layoutCollection = (grid) => {
             count = remaining - 3 === 1 ? 2 : 3;
             row = teasers.slice(index, index + count);
         }
+        // -> Gewähltes Format (Feld «Bildformat»): hoch = schmales Feld (3 Spalten, bei fester Reihenhöhe hochkant), quer = breites Feld (mind. 6)
+        const fits = (pattern, rowTeasers) => pattern.every((width, i) => {
+            const format = rowTeasers[i].dataset.format;
+            return format === 'portrait' ? width <= 3 : format === 'landscape' ? width >= 6 : true;
+        });
+        if (count > 1 && !rowPatterns[count].some((pattern) => fits(pattern, row))) {
+            // -> Passt kein Muster, eine andere Anzahl pro Reihe versuchen
+            const candidates = [2, 3, 4].filter((other) => other <= Math.min(maxCount, remaining) && remaining - other !== 1);
+            const alternative = candidates.find((other) => rowPatterns[other].some((pattern) => fits(pattern, teasers.slice(index, index + other))));
+            if (alternative) {
+                count = alternative;
+                row = teasers.slice(index, index + count);
+            }
+        }
 
         let widths = [12];
         if (count > 1) {
             // -> Das Muster wählen, bei dem wichtige Projekte die breitesten Felder bekommen
             const score = (pattern) => pattern.reduce((sum, width, i) => sum + width * priorityWeight[row[i].dataset.priority || 'normal'], 0);
-            const patterns = rowPatterns[count];
+            const fitting = rowPatterns[count].filter((pattern) => fits(pattern, row));
+            const patterns = fitting.length ? fitting : rowPatterns[count];
             const best = Math.max(...patterns.map(score));
             widths = pick(random, patterns.filter((pattern) => score(pattern) === best));
         }
