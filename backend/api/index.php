@@ -20,7 +20,7 @@ const API_POST_META = [
 const API_OPTIONS = [
     'contact_name', 'contact_street', 'contact_city', 'contact_phone', 'contact_email',
     'social_instagram', 'social_linkedin',
-    'form_recipient', 'form_sender', 'form_title', 'contact_words', 'form_note', 'form_success',
+    'form_recipient', 'form_sender', 'form_title', 'contact_words', 'form_note', 'form_project_image', 'form_success',
     'seo_description', 'seo_image', 'seo_services',
     'snow',
 ];

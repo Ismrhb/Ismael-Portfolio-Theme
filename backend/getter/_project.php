@@ -83,6 +83,23 @@ function get_projects(): array
     return array_map('get_project_teaser_by_id', $ids);
 }
 
+// -> Kontaktformular unter jedem Projekt (Daten wie beim Baustein «Kontaktformular»); false, wenn das Projekt den Baustein selbst hat
+function get_project_contact_module(): array|false
+{
+    if (page_has_module('contact')) {
+        return false;
+    }
+    $image = get_media_by_id(get_globals_form()['project_image'], 'l');
+    return [
+        'mobile_only' => false,
+        'image' => $image,
+        'image_text' => '',
+        'kicker' => '',
+        'submit' => 'Senden',
+        'phone' => get_globals_contact(),
+    ];
+}
+
 // -> Alle anderen Projekte für "Andere Projekte", beginnend mit dem nächsten in der Reihenfolge der Projekte-Übersicht
 function get_other_projects(int $id): array
 {
